@@ -36,7 +36,7 @@ export function DashboardStatCard({
         className={cn(
           "h-full border-brand-neutral transition-colors",
           "md:group-hover:border-brand-secondary/40 md:group-hover:bg-brand-background/30",
-          active && "border-brand-secondary/40 bg-brand-secondary/5"
+          active && "border-brand-secondary/40 bg-brand-secondary/5 dark:bg-brand-secondary/10"
         )}
       >
         <CardContent className="flex items-center gap-4 p-5">

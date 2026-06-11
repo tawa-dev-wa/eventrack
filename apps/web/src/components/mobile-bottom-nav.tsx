@@ -17,7 +17,7 @@ export function MobileBottomNav() {
     <>
       <nav
         className={cn(
-          "fixed bottom-0 left-0 right-0 border-t border-brand-neutral bg-brand-surface md:hidden",
+          "fixed bottom-0 left-0 right-0 border-t border-brand-neutral bg-brand-surface-raised md:hidden dark:shadow-[0_-4px_24px_rgb(0_0_0/0.35)]",
           menuOpen ? "z-[60]" : "z-50"
         )}
         aria-label="Navigation principale"

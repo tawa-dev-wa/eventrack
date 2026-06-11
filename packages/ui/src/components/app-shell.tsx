@@ -33,7 +33,7 @@ export function AppShell({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex h-24 shrink-0 items-center justify-between border-b border-brand-neutral bg-brand-surface px-4 md:h-20 md:px-6">
+        <header className="sticky top-0 z-40 flex h-24 shrink-0 items-center justify-between border-b border-brand-neutral bg-brand-surface-raised px-4 md:h-20 md:px-6 dark:shadow-sm">
           <Link href="/dashboard" className="shrink-0 md:hidden">
             <Logo variant="full" className="h-20 w-auto" />
           </Link>

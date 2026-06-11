@@ -5,7 +5,7 @@
 @theme {
   --spacing-mobile-nav: calc(6rem + env(safe-area-inset-bottom, 0px));
 
-  /* Charte Eventrack — valeurs par défaut (mode jour) */
+  /* Charte Eventrack — mode jour */
   --color-brand-navy: #16213e;
   --color-brand-primary: #16213e;
   --color-brand-secondary: #2563eb;
@@ -14,6 +14,7 @@
   --color-brand-neutral: #e2e8f0;
   --color-brand-background: #f8fafc;
   --color-brand-surface: #ffffff;
+  --color-brand-surface-raised: #ffffff;
   --color-brand-critical: #ef4444;
 
   --color-sidebar: #16213e;
@@ -25,18 +26,29 @@
   --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
 }
 
-/* Mode nuit — couleurs charte (#16213E, #1E3A5F, #2563EB, #F8FAFC) */
+/*
+ * Mode nuit — même logique que le jour, inversée :
+ * fond profond neutre · cartes surélevées · sidebar = navy charte (#16213E)
+ */
 html.dark {
   color-scheme: dark;
 
-  --color-brand-primary: #f8fafc;
-  --color-brand-secondary: #3b82f6;
-  --color-brand-neutral: #2d4a6f;
-  --color-brand-background: #16213e;
-  --color-brand-surface: #1e3a5f;
+  --color-brand-primary: #e8edf5;
+  --color-brand-secondary: #5b9aff;
+  --color-brand-alert: #fb923c;
+  --color-brand-success: #4ade80;
+  --color-brand-neutral: #2a3548;
+  --color-brand-background: #090e1a;
+  --color-brand-surface: #121a2b;
+  --color-brand-surface-raised: #182236;
+  --color-brand-critical: #f87171;
 
-  --color-sidebar: #0f172a;
-  --color-sidebar-border: #16213e;
+  /* Sidebar = ancrage marque, identique au mode jour */
+  --color-sidebar: #16213e;
+  --color-sidebar-foreground: #f8fafc;
+  --color-sidebar-muted: #8fa3be;
+  --color-sidebar-active: #5b9aff;
+  --color-sidebar-border: #1e3a5f;
 }
 
 @layer base {
@@ -56,8 +68,17 @@ html.dark {
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     transition:
-      background-color 0.2s ease,
-      color 0.2s ease;
+      background-color 0.25s ease,
+      color 0.25s ease;
+  }
+
+  html.dark body {
+    background-image: radial-gradient(
+      ellipse 120% 80% at 50% -20%,
+      rgb(30 58 95 / 0.35),
+      transparent 55%
+    );
+    background-color: var(--color-brand-background);
   }
 
   a,
@@ -71,9 +92,22 @@ html.dark {
   }
 }
 
-/* Surfaces blanches hardcodées → surface thématique */
-.dark .bg-white {
-  background-color: var(--color-brand-surface);
+@layer components {
+  .dark .bg-white {
+    background-color: var(--color-brand-surface);
+  }
+
+  /* Survols : en sombre on éclaircit légèrement, pas l'inverse */
+  .dark .hover\:bg-brand-background:hover,
+  .dark .active\:bg-brand-background:active {
+    background-color: var(--color-brand-surface-raised);
+  }
+
+  .dark .shadow-sm {
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.35),
+      0 0 0 1px rgb(255 255 255 / 0.04);
+  }
 }
 
 @media print {
