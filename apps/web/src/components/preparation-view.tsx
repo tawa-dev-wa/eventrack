@@ -418,11 +418,9 @@ export function PreparationView({
                           )}
                         >
                           {line.designation}
-                          {line.reference && (
-                            <span className="ml-2 font-normal text-brand-primary/50">
-                              {line.reference}
-                            </span>
-                          )}
+                          <span className="ml-2 font-normal text-brand-primary/50">
+                            × {line.quantityRequested}
+                          </span>
                         </button>
 
                       </div>
@@ -443,31 +441,13 @@ export function PreparationView({
 
                     <div className="mt-2 space-y-2">
 
-                      <div>
+                      <PrepPackagingBreakdown
 
-                        <span className="text-sm text-brand-primary/60">
+                        quantity={line.quantityRequested}
 
-                          Demandé :{" "}
+                        packSize={packSize}
 
-                          <strong className="text-brand-primary">
-
-                            {line.quantityRequested}
-
-                          </strong>
-
-                        </span>
-
-                        <PrepPackagingBreakdown
-
-                          quantity={line.quantityRequested}
-
-                          packSize={packSize}
-
-                          className="mt-1"
-
-                        />
-
-                      </div>
+                      />
 
                       <div>
 
