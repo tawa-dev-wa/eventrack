@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   Input,
+  PageHeader,
 } from "@eventrack/ui";
 import { Search } from "lucide-react";
 import { useMockStore } from "@/lib/mock/store";
@@ -40,14 +41,10 @@ export default function StockPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-brand-primary">
-          Matériel & Stock
-        </h1>
-        <p className="text-sm text-brand-primary/60">
-          Catalogue et disponibilité en temps réel (mock)
-        </p>
-      </div>
+      <PageHeader
+        title="Matériel & Stock"
+        description="Catalogue et disponibilité en temps réel (mock)"
+      />
 
       <Tabs
         tabs={[

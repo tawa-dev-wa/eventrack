@@ -39,7 +39,7 @@ export function MobileMenuDrawer({
       />
       <div className="absolute bottom-0 left-0 right-0 z-10 max-h-[85dvh] overflow-y-auto overscroll-y-contain rounded-t-2xl bg-brand-surface-raised pb-[env(safe-area-inset-bottom)] shadow-xl">
         <div className="sticky top-0 flex items-center justify-between border-b border-brand-neutral bg-brand-surface-raised px-5 py-4">
-          <h2 className="text-lg font-semibold text-brand-primary">
+          <h2 className="text-xl font-bold tracking-tight text-brand-primary">
             Tous les modules
           </h2>
           <button

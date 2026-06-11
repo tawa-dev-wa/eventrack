@@ -49,7 +49,9 @@ export function DashboardStatCard({
             <Icon className="h-5 w-5 text-brand-secondary" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm text-brand-primary/60">{label}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-primary/45">
+              {label}
+            </p>
             <div className="flex items-center gap-2">
               <p className="text-2xl font-bold text-brand-primary">{value}</p>
               <StatusIndicator level={level} />

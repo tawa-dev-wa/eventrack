@@ -13,5 +13,6 @@ export {
 } from "./components/card";
 export { Sidebar, type NavItem } from "./components/sidebar";
 export { AppShell } from "./components/app-shell";
+export { PageHeader } from "./components/page-header";
 export { ThemeToggle } from "./components/theme-toggle";
 export { cn } from "./lib/utils";

@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
   Input,
+  PageHeader,
   Textarea,
 } from "@eventrack/ui";
 import { useMockStore } from "@/lib/mock/store";
@@ -39,14 +40,10 @@ export default function NewEventPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-brand-primary">
-          Nouvel événement
-        </h1>
-        <p className="text-sm text-brand-primary/60">
-          Créez une fiche événement puis construisez le bon de commande
-        </p>
-      </div>
+      <PageHeader
+        title="Nouvel événement"
+        description="Créez une fiche événement puis construisez le bon de commande"
+      />
 
       <Card>
         <CardHeader>

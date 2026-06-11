@@ -34,7 +34,9 @@ function InterimPrepContent({
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-secondary">
           Préparation de commande
         </p>
-        <h1 className="mt-1 text-xl font-bold text-brand-primary">{eventName}</h1>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-brand-primary">
+          {eventName}
+        </h1>
         <p className="mt-1 text-sm text-brand-primary/60">
           {name} · démo locale (sans synchronisation)
         </p>
@@ -68,7 +70,9 @@ function WelcomeScreen({
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-brand-background p-4">
       <div className="w-full max-w-md rounded-2xl border border-brand-neutral bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-bold text-brand-primary">Bienvenue</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-brand-primary sm:text-3xl">
+          Bienvenue
+        </h1>
         <p className="mt-2 text-sm text-brand-primary/60">
           {event.name.split(" — ")[0]}
         </p>

@@ -129,7 +129,9 @@ export function PreparationView({
 
         <div className="rounded-lg border border-brand-neutral bg-white p-4">
 
-          <h2 className="text-lg font-bold text-brand-primary">{event.name}</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-brand-primary">
+            {event.name}
+          </h2>
 
           <p className="mt-1 text-sm font-medium text-brand-secondary">
 

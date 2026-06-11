@@ -12,6 +12,7 @@ import {
 import { EventStatusBadge } from "@/components/status-badges";
 import { PrepProgressBar } from "@/components/prep-progress-bar";
 import { PreparationView } from "@/components/preparation-view";
+import { PageHeader } from "@eventrack/ui";
 
 function PreparationPageContent() {
   const searchParams = useSearchParams();
@@ -35,14 +36,10 @@ function PreparationPageContent() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-brand-primary md:text-2xl">
-          Préparation
-        </h1>
-        <p className="text-sm text-brand-primary/60">
-          Événements du jour — mode entrepôt
-        </p>
-      </div>
+      <PageHeader
+        title="Préparation"
+        description="Événements du jour — mode entrepôt"
+      />
 
       <div className="space-y-3">
         {todayEvents.map((event) => {

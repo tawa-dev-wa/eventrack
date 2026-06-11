@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { Button, Card, CardContent } from "@eventrack/ui";
+import { Button, Card, CardContent, PageHeader } from "@eventrack/ui";
 import { Plus } from "lucide-react";
 import type { MissingResponseType } from "@eventrack/shared";
 import { useMockStore } from "@/lib/mock/store";
@@ -82,24 +82,20 @@ export function MissingPageClient() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-brand-primary md:text-2xl">
-            Manquants
-          </h1>
-          <p className="text-sm text-brand-primary/60">
-            Suivi et réponses commerciales
-          </p>
-        </div>
-        <Button
-          variant="secondary"
-          className="min-h-11 touch-manipulation"
-          onClick={() => setShowCreate(true)}
-        >
-          <Plus className="h-4 w-4" />
-          Déclarer un manquant
-        </Button>
-      </div>
+      <PageHeader
+        title="Manquants"
+        description="Suivi et réponses commerciales"
+        action={
+          <Button
+            variant="secondary"
+            className="min-h-11 touch-manipulation"
+            onClick={() => setShowCreate(true)}
+          >
+            <Plus className="h-4 w-4" />
+            Déclarer un manquant
+          </Button>
+        }
+      />
 
       <div className="flex gap-2 overflow-x-auto pb-1">
         {filterTabs.map(({ id, label }) => (

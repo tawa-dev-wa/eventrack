@@ -11,6 +11,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  PageHeader,
 } from "@eventrack/ui";
 import {
   AlertTriangle,
@@ -331,14 +332,10 @@ export function DashboardView() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-brand-primary md:text-2xl">
-          Tableau de bord
-        </h1>
-        <p className="text-sm text-brand-primary/60">
-          {formatDateFr("2026-06-11")} — Vue opérationnelle
-        </p>
-      </div>
+      <PageHeader
+        title="Tableau de bord"
+        description={`${formatDateFr("2026-06-11")} — Vue opérationnelle`}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {stats.map((stat) => (
@@ -390,10 +387,10 @@ export function DashboardView() {
                   className="flex items-center justify-between gap-3 rounded-md border border-brand-neutral p-3 transition-colors hover:border-brand-secondary/30 hover:bg-brand-background"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-brand-primary">
+                    <p className="font-semibold text-brand-primary">
                       {event.name.split(" — ")[0]}
                     </p>
-                    <p className="text-xs text-brand-primary/50">
+                    <p className="mt-0.5 text-xs text-brand-primary/45">
                       {event.eventType}
                     </p>
                   </div>
@@ -432,7 +429,7 @@ export function DashboardView() {
                     href={`/events/${item.eventId}?tab=summary`}
                     className="flex items-center justify-between gap-3 rounded-md border border-brand-neutral p-3 transition-colors hover:border-brand-secondary/30 hover:bg-brand-background"
                   >
-                    <p className="text-sm font-medium text-brand-primary">
+                    <p className="font-semibold text-brand-primary">
                       {item.eventName}
                     </p>
                     <p className="shrink-0 text-sm font-semibold text-brand-secondary">
@@ -469,10 +466,10 @@ export function DashboardView() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-brand-primary">
+                      <p className="font-semibold text-brand-primary">
                         {event.name}
                       </p>
-                      <p className="mt-1 text-sm font-medium text-brand-secondary">
+                      <p className="mt-1 text-xs font-medium text-brand-secondary">
                         Départ camion : {formatDepartureTime(event.departureTime)}
                       </p>
                       <div className="mt-2">
@@ -506,10 +503,10 @@ export function DashboardView() {
               >
                 <Badge variant="critical">Manquant</Badge>
                 <div>
-                  <p className="text-sm font-medium text-brand-primary">
+                  <p className="font-semibold text-brand-primary">
                     {m.designation} · {m.eventName.split(" — ")[0]}
                   </p>
-                  <p className="text-xs text-brand-primary/50">
+                  <p className="mt-0.5 text-xs text-brand-primary/45">
                     Manque {missingQuantity(m)} unité(s)
                   </p>
                 </div>
@@ -522,9 +519,14 @@ export function DashboardView() {
                 className="flex items-start gap-3 rounded-md border border-brand-neutral p-3 transition-colors hover:bg-brand-background"
               >
                 <Badge variant="secondary">Retour</Badge>
-                <p className="text-sm text-brand-primary">
-                  {item.eventName} · {item.returnLabel}
-                </p>
+                <div className="min-w-0">
+                  <p className="font-semibold text-brand-primary">
+                    {item.eventName}
+                  </p>
+                  <p className="mt-0.5 text-xs text-brand-primary/45">
+                    {item.returnLabel}
+                  </p>
+                </div>
               </Link>
             ))}
           </CardContent>
@@ -545,7 +547,7 @@ export function DashboardView() {
               className="rounded-md border border-brand-neutral p-4"
             >
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-brand-primary">
+                <p className="font-semibold text-brand-primary">
                   {mod.userName}
                 </p>
                 <span className="text-xs text-brand-primary/40">{mod.time}</span>

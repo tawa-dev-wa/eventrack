@@ -4,7 +4,14 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useIsMobile } from "@/lib/use-is-mobile";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@eventrack/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  PageHeader,
+} from "@eventrack/ui";
 import {
   useMockStore,
   formatShortDate,
@@ -55,34 +62,38 @@ export function EventDetailView({ eventId }: { eventId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-brand-primary md:text-2xl">
-            {event.name}
-          </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-brand-primary/60 md:gap-3">
-            <EventStatusBadge status={event.status} />
-            <span>{formatShortDate(event.date)} · {event.startTime}</span>
-            <span className="font-medium text-brand-secondary">
-              Départ camion {formatDepartureTime(event.departureTime)}
-            </span>
-            <span>
-              {event.guestsAdults} convives · {event.commercial}
-            </span>
+      <PageHeader
+        title={event.name}
+        meta={
+          <>
+            <div className="flex flex-wrap items-center gap-2 text-sm text-brand-primary/60 md:gap-3">
+              <EventStatusBadge status={event.status} />
+              <span>
+                {formatShortDate(event.date)} · {event.startTime}
+              </span>
+              <span className="font-medium text-brand-secondary">
+                Départ camion {formatDepartureTime(event.departureTime)}
+              </span>
+              <span>
+                {event.guestsAdults} convives · {event.commercial}
+              </span>
+            </div>
+            <div className="mt-3 max-w-md md:hidden">
+              <PrepProgressBar progress={progress} compact />
+            </div>
+          </>
+        }
+        action={
+          <div className="hidden gap-2 sm:flex">
+            <Button variant="outline" size="sm" disabled title="Bientôt disponible">
+              Exporter PDF
+            </Button>
+            <Button variant="secondary" size="sm" disabled title="Bientôt disponible">
+              Modifier
+            </Button>
           </div>
-          <div className="mt-3 max-w-md md:hidden">
-            <PrepProgressBar progress={progress} compact />
-          </div>
-        </div>
-        <div className="hidden gap-2 sm:flex">
-          <Button variant="outline" size="sm" disabled title="Bientôt disponible">
-            Exporter PDF
-          </Button>
-          <Button variant="secondary" size="sm" disabled title="Bientôt disponible">
-            Modifier
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       <Tabs
         tabs={tabs}

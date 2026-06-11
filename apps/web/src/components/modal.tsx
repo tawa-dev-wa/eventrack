@@ -41,7 +41,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         <div className="flex shrink-0 items-center justify-between border-b border-brand-neutral px-5 py-4">
           <h2
             id="modal-title"
-            className="text-lg font-semibold text-brand-primary"
+            className="text-xl font-bold tracking-tight text-brand-primary"
           >
             {title}
           </h2>

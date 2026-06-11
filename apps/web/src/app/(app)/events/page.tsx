@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button, Card, CardContent } from "@eventrack/ui";
+import { Button, Card, CardContent, PageHeader } from "@eventrack/ui";
 import { Plus } from "lucide-react";
 import {
   useMockStore,
@@ -37,23 +37,19 @@ export default function EventsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-brand-primary md:text-2xl">
-            Événements
-          </h1>
-          <p className="text-sm text-brand-primary/60">
-            {filtered.length} événement{filtered.length > 1 ? "s" : ""}
-          </p>
-        </div>
-        <Link href="/events/new">
-          <Button variant="secondary" size="sm" className="md:size-default">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Nouvel événement</span>
-            <span className="sm:hidden">Nouveau</span>
-          </Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Événements"
+        description={`${filtered.length} événement${filtered.length > 1 ? "s" : ""}`}
+        action={
+          <Link href="/events/new">
+            <Button variant="secondary" size="sm" className="md:size-default">
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Nouvel événement</span>
+              <span className="sm:hidden">Nouveau</span>
+            </Button>
+          </Link>
+        }
+      />
 
       <div className="flex flex-wrap gap-2">
         {filters.map((f) => (
@@ -86,7 +82,7 @@ export default function EventsPage() {
               className="block rounded-lg border border-brand-neutral bg-white p-4"
             >
               <div className="flex items-start justify-between gap-2">
-                <p className="font-medium text-brand-primary">{event.name}</p>
+                <p className="font-semibold text-brand-primary">{event.name}</p>
                 <EventStatusBadge status={event.status} />
               </div>
               <p className="mt-1 text-sm text-brand-secondary">
