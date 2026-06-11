@@ -13,6 +13,7 @@ interface AppShellProps {
   missingCount?: number;
   mobileNav?: React.ReactNode;
   mobileFab?: React.ReactNode;
+  headerExtra?: React.ReactNode;
 }
 
 export function AppShell({
@@ -23,6 +24,7 @@ export function AppShell({
   missingCount,
   mobileNav,
   mobileFab,
+  headerExtra,
 }: AppShellProps) {
   return (
     <div className="flex min-h-dvh w-full">
@@ -31,13 +33,14 @@ export function AppShell({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex h-24 shrink-0 items-center justify-between border-b border-brand-neutral bg-white px-4 md:h-20 md:px-6">
+        <header className="sticky top-0 z-40 flex h-24 shrink-0 items-center justify-between border-b border-brand-neutral bg-brand-surface px-4 md:h-20 md:px-6">
           <Link href="/dashboard" className="shrink-0 md:hidden">
             <Logo variant="full" className="h-20 w-auto" />
           </Link>
           <div className="hidden flex-1 md:block" aria-hidden />
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            {headerExtra}
             <button
               type="button"
               className="relative rounded-md p-2 text-brand-primary/60 hover:bg-brand-background"

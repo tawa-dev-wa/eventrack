@@ -33,12 +33,12 @@ export function MobileMenuDrawer({
     <div className="fixed inset-0 z-[55] md:hidden">
       <button
         type="button"
-        className="absolute inset-0 bg-brand-primary/40"
+        className="absolute inset-0 bg-brand-navy/50"
         aria-label="Fermer le menu"
         onClick={onClose}
       />
-      <div className="absolute bottom-0 left-0 right-0 z-10 max-h-[85dvh] overflow-y-auto overscroll-y-contain rounded-t-2xl bg-white pb-[env(safe-area-inset-bottom)] shadow-xl">
-        <div className="sticky top-0 flex items-center justify-between border-b border-brand-neutral bg-white px-5 py-4">
+      <div className="absolute bottom-0 left-0 right-0 z-10 max-h-[85dvh] overflow-y-auto overscroll-y-contain rounded-t-2xl bg-brand-surface pb-[env(safe-area-inset-bottom)] shadow-xl">
+        <div className="sticky top-0 flex items-center justify-between border-b border-brand-neutral bg-brand-surface px-5 py-4">
           <h2 className="text-lg font-semibold text-brand-primary">
             Tous les modules
           </h2>
@@ -71,7 +71,7 @@ export function MobileMenuDrawer({
                   "relative flex min-h-[4.5rem] flex-col items-center justify-center gap-2 rounded-xl border p-3 text-center transition-colors",
                   active
                     ? "border-brand-secondary bg-brand-secondary/5 text-brand-secondary"
-                    : "border-brand-neutral bg-white text-brand-primary hover:bg-brand-background"
+                    : "border-brand-neutral bg-brand-surface text-brand-primary hover:bg-brand-background"
                 )}
               >
                 <Icon className="h-6 w-6 shrink-0" />

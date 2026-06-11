@@ -7,15 +7,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-brand-primary text-white hover:bg-brand-primary/90",
+        primary: "bg-brand-navy text-white hover:bg-brand-navy/90",
         secondary: "bg-brand-secondary text-white hover:bg-brand-secondary/90",
         alert: "bg-brand-alert text-white hover:bg-brand-alert/90",
         success: "bg-brand-success text-white hover:bg-brand-success/90",
         outline:
-          "border border-brand-neutral bg-white text-brand-primary hover:bg-brand-background",
+          "border border-brand-neutral bg-brand-surface text-brand-primary hover:bg-brand-background",
         ghost: "text-brand-primary hover:bg-brand-neutral/50",
         destructive:
-          "border border-brand-critical text-brand-critical bg-white hover:bg-red-50",
+          "border border-brand-critical text-brand-critical bg-brand-surface hover:bg-brand-critical/10",
       },
       size: {
         sm: "h-8 px-3 text-xs",

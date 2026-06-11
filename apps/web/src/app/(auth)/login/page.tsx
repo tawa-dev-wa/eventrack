@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Logo, Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent } from "@eventrack/ui";
 import { authClient } from "@/lib/auth-client";
+import { ThemeToggleButton } from "@/components/theme-toggle-button";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen">
-      <div className="hidden w-1/2 flex-col justify-between bg-brand-primary p-12 text-white lg:flex">
+      <div className="hidden w-1/2 flex-col justify-between bg-brand-navy p-12 text-white lg:flex">
         <Logo variant="full" onDark className="h-24 w-auto" />
 
         <div className="space-y-6">
@@ -59,7 +60,10 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <div className="flex flex-1 items-center justify-center bg-brand-background p-8">
+      <div className="relative flex flex-1 items-center justify-center bg-brand-background p-8">
+        <div className="absolute right-4 top-4 md:right-8 md:top-8">
+          <ThemeToggleButton />
+        </div>
         <div className="w-full max-w-md space-y-8">
           <div className="flex justify-center lg:hidden">
             <Logo variant="full" className="h-20 w-auto" />

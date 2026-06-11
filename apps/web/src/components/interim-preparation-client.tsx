@@ -14,6 +14,7 @@ import {
   usePreparer,
 } from "@/lib/mock/preparer-context";
 import { PreparationView } from "@/components/preparation-view";
+import { ThemeToggleButton } from "@/components/theme-toggle-button";
 
 function InterimPrepContent({
   eventId,
@@ -26,7 +27,10 @@ function InterimPrepContent({
 
   return (
     <div className="mx-auto min-h-[100dvh] max-w-lg touch-pan-y bg-brand-background pb-[max(2rem,env(safe-area-inset-bottom))]">
-      <header className="border-b border-brand-neutral bg-white px-4 py-4">
+      <header className="relative border-b border-brand-neutral bg-brand-surface px-4 py-4 pr-16">
+        <div className="absolute right-3 top-3">
+          <ThemeToggleButton />
+        </div>
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-secondary">
           Préparation de commande
         </p>

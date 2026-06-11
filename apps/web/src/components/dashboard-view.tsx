@@ -18,6 +18,7 @@ import {
   RotateCcw,
   CalendarDays,
   ClipboardList,
+  Truck,
 } from "lucide-react";
 import {
   useMockStore,
@@ -32,14 +33,28 @@ import { PrepProgressBar } from "@/components/prep-progress-bar";
 import { DashboardStatCard } from "@/components/dashboard-stat-card";
 import { cn } from "@eventrack/ui";
 
-type StatPanelId = "events" | "missing" | "preparations" | "returns";
+type StatPanelId =
+  | "events"
+  | "missing"
+  | "preparations"
+  | "departures"
+  | "returns";
 
 const PANEL_TITLES: Record<StatPanelId, string> = {
   events: "Événements du jour",
   missing: "Manquants actifs",
   preparations: "Préparations en cours",
+  departures: "Départs attendus",
   returns: "Retours attendus",
 };
+
+function sortByDepartureTime<
+  T extends { departureTime: string },
+>(items: T[]): T[] {
+  return [...items].sort((a, b) =>
+    a.departureTime.localeCompare(b.departureTime)
+  );
+}
 
 export function DashboardView() {
   const {
@@ -67,6 +82,16 @@ export function DashboardView() {
         );
       }),
     [todayEvents, getEventPrepProgress]
+  );
+
+  const departuresToday = useMemo(
+    () =>
+      sortByDepartureTime(
+        todayEvents.filter(
+          (e) => e.status !== "cancelled" && e.status !== "completed"
+        )
+      ),
+    [todayEvents]
   );
 
   const returnsByEvent = useMemo(() => {
@@ -189,6 +214,33 @@ export function DashboardView() {
             );
           })
         );
+      case "departures":
+        return departuresToday.length === 0 ? (
+          <p className="text-sm text-brand-primary/50">
+            Aucun départ camion prévu aujourd&apos;hui.
+          </p>
+        ) : (
+          departuresToday.map((event) => (
+            <Link
+              key={event.id}
+              href={`/events/${event.id}?tab=preparation`}
+              onClick={() => setActivePanel(null)}
+              className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-brand-neutral p-4 active:bg-brand-background"
+            >
+              <div className="min-w-0">
+                <p className="font-medium text-brand-primary">
+                  {event.name.split(" — ")[0]}
+                </p>
+                <p className="mt-0.5 text-sm text-brand-primary/50">
+                  {event.eventType}
+                </p>
+              </div>
+              <p className="shrink-0 text-sm font-semibold text-brand-secondary">
+                départ {formatDepartureTime(event.departureTime)}
+              </p>
+            </Link>
+          ))
+        );
       case "returns":
         return returnsByEvent.length === 0 ? (
           <p className="text-sm text-brand-primary/50">Aucun retour planifié.</p>
@@ -219,6 +271,7 @@ export function DashboardView() {
       events: "Accès direct à la fiche de chaque événement",
       missing: "Tickets en cours — accès direct au détail",
       preparations: "Avancement par événement — accès à la préparation",
+      departures: "Heures de départ camion par prestation — ordre chronologique",
       returns: "Matériel en circulation — accès à la fiche événement",
     };
 
@@ -260,6 +313,14 @@ export function DashboardView() {
       icon: ClipboardList,
     },
     {
+      id: "departures" as const,
+      label: "Départs attendus",
+      value: departuresToday.length,
+      level:
+        departuresToday.length > 0 ? ("warning" as const) : ("ok" as const),
+      icon: Truck,
+    },
+    {
       id: "returns" as const,
       label: "Retours attendus",
       value: returnsByEvent.length,
@@ -279,7 +340,7 @@ export function DashboardView() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {stats.map((stat) => (
           <DashboardStatCard
             key={stat.id}
@@ -304,6 +365,86 @@ export function DashboardView() {
       )}
 
       {!isMobile && activePanel && renderInlinePanel(activePanel)}
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Truck className="h-4 w-4 text-brand-secondary" />
+              <CardTitle>Départs attendus</CardTitle>
+            </div>
+            <CardDescription>
+              Départs camion du jour — par ordre chronologique
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {departuresToday.length === 0 ? (
+              <p className="text-sm text-brand-primary/50">
+                Aucun départ prévu aujourd&apos;hui.
+              </p>
+            ) : (
+              departuresToday.map((event) => (
+                <Link
+                  key={event.id}
+                  href={`/events/${event.id}?tab=preparation`}
+                  className="flex items-center justify-between gap-3 rounded-md border border-brand-neutral p-3 transition-colors hover:border-brand-secondary/30 hover:bg-brand-background"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-brand-primary">
+                      {event.name.split(" — ")[0]}
+                    </p>
+                    <p className="text-xs text-brand-primary/50">
+                      {event.eventType}
+                    </p>
+                  </div>
+                  <p className="shrink-0 text-sm font-semibold text-brand-secondary">
+                    départ {formatDepartureTime(event.departureTime)}
+                  </p>
+                </Link>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <RotateCcw className="h-4 w-4 text-brand-secondary" />
+              <CardTitle>Retours attendus</CardTitle>
+            </div>
+            <CardDescription>
+              Matériel en circulation — retours planifiés
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {returnsByEvent.length === 0 ? (
+              <p className="text-sm text-brand-primary/50">
+                Aucun retour planifié.
+              </p>
+            ) : (
+              returnsByEvent.map((item) => {
+                const timePart =
+                  item.returnLabel.split("·").pop()?.trim() ??
+                  item.returnLabel;
+                return (
+                  <Link
+                    key={item.eventId}
+                    href={`/events/${item.eventId}?tab=summary`}
+                    className="flex items-center justify-between gap-3 rounded-md border border-brand-neutral p-3 transition-colors hover:border-brand-secondary/30 hover:bg-brand-background"
+                  >
+                    <p className="text-sm font-medium text-brand-primary">
+                      {item.eventName}
+                    </p>
+                    <p className="shrink-0 text-sm font-semibold text-brand-secondary">
+                      retour {timePart}
+                    </p>
+                  </Link>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

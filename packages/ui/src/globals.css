@@ -1,15 +1,19 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  /* Hauteur barre nav mobile fixe + safe area iPhone */
   --spacing-mobile-nav: calc(6rem + env(safe-area-inset-bottom, 0px));
 
+  /* Charte Eventrack — valeurs par défaut (mode jour) */
+  --color-brand-navy: #16213e;
   --color-brand-primary: #16213e;
   --color-brand-secondary: #2563eb;
   --color-brand-alert: #f97316;
   --color-brand-success: #22c55e;
   --color-brand-neutral: #e2e8f0;
   --color-brand-background: #f8fafc;
+  --color-brand-surface: #ffffff;
   --color-brand-critical: #ef4444;
 
   --color-sidebar: #16213e;
@@ -19,6 +23,20 @@
   --color-sidebar-border: #1e3a5f;
 
   --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
+}
+
+/* Mode nuit — couleurs charte (#16213E, #1E3A5F, #2563EB, #F8FAFC) */
+html.dark {
+  color-scheme: dark;
+
+  --color-brand-primary: #f8fafc;
+  --color-brand-secondary: #3b82f6;
+  --color-brand-neutral: #2d4a6f;
+  --color-brand-background: #16213e;
+  --color-brand-surface: #1e3a5f;
+
+  --color-sidebar: #0f172a;
+  --color-sidebar-border: #16213e;
 }
 
 @layer base {
@@ -37,6 +55,9 @@
     font-family: var(--font-sans);
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
   }
 
   a,
@@ -48,6 +69,11 @@
   label {
     touch-action: manipulation;
   }
+}
+
+/* Surfaces blanches hardcodées → surface thématique */
+.dark .bg-white {
+  background-color: var(--color-brand-surface);
 }
 
 @media print {

@@ -28,7 +28,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
     <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-4">
       <button
         type="button"
-        className="absolute inset-0 bg-brand-primary/40"
+        className="absolute inset-0 bg-brand-navy/50"
         aria-label="Fermer"
         onClick={onClose}
       />
@@ -36,7 +36,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="relative z-10 flex max-h-[90dvh] w-full flex-col rounded-t-2xl bg-white shadow-xl sm:max-w-lg sm:rounded-lg"
+        className="relative z-10 flex max-h-[90dvh] w-full flex-col rounded-t-2xl bg-brand-surface shadow-xl sm:max-w-lg sm:rounded-lg"
       >
         <div className="flex shrink-0 items-center justify-between border-b border-brand-neutral px-5 py-4">
           <h2
