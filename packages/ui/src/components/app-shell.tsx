@@ -65,8 +65,12 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="flex-1 bg-brand-background p-4 pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:p-6 md:pb-6">
+        <main className="flex-1 bg-brand-background p-4 md:p-6">
           {children}
+          <div
+            className="h-mobile-nav shrink-0 md:hidden"
+            aria-hidden
+          />
         </main>
 
         {mobileFab}

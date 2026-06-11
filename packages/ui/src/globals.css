@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 @theme {
+  /* Hauteur barre nav mobile fixe + safe area iPhone */
+  --spacing-mobile-nav: calc(6rem + env(safe-area-inset-bottom, 0px));
+
   --color-brand-primary: #16213e;
   --color-brand-secondary: #2563eb;
   --color-brand-alert: #f97316;
@@ -26,6 +29,7 @@
   html {
     -webkit-text-size-adjust: 100%;
     overflow-y: scroll;
+    scroll-padding-bottom: var(--spacing-mobile-nav);
   }
 
   body {
