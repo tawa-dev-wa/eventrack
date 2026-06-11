@@ -1,0 +1,494 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Better Auth ───────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions              Session[]
+  accounts              Account[]
+  members               Member[]
+  invitations           Invitation[]       @relation("Inviter")
+  commercialEvents      Event[]            @relation("Commercial")
+  driverEvents          Event[]            @relation("Driver")
+  assignedMissingItems  MissingItem[]      @relation("AssignedCommercial")
+  createdMissingItems   MissingItem[]      @relation("MissingCreator")
+  eventModifications    EventModification[]
+  materialMovements     MaterialMovement[]
+  preparationValidations PreparationItem[] @relation("Validator")
+  auditLogs             AuditLog[]
+  notifications         Notification[]
+  driverProfile         Driver?
+
+  @@map("user")
+}
+
+model Session {
+  id                   String   @id @default(cuid())
+  expiresAt            DateTime
+  token                String   @unique
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  ipAddress            String?
+  userAgent            String?
+  userId               String
+  activeOrganizationId String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@map("verification")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  createdAt DateTime @default(now())
+  metadata  String?
+
+  // Subscription
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  plan                 String   @default("trial")
+  subscriptionStatus   String   @default("active")
+
+  members               Member[]
+  invitations           Invitation[]
+  events                Event[]
+  products              Product[]
+  trucks                Truck[]
+  drivers               Driver[]
+  warehouseZones        WarehouseZone[]
+  missingItems          MissingItem[]
+  notifications         Notification[]
+  auditLogs             AuditLog[]
+  documentImportJobs    DocumentImportJob[]
+  preparationSessions   PreparationSession[]
+
+  @@map("organization")
+}
+
+model Member {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  role           String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("member")
+}
+
+model Invitation {
+  id             String   @id @default(cuid())
+  organizationId String
+  email          String
+  role           String?
+  status         String   @default("pending")
+  expiresAt      DateTime
+  inviterId      String
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviter      User         @relation("Inviter", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@map("invitation")
+}
+
+// ─── Événements ────────────────────────────────────────────────────────────
+
+model Event {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  clientName     String
+  date           DateTime @db.Date
+  startTime      String?
+  endTime        String?
+  address        String
+  guestsAdults   Int      @default(0)
+  guestsChildren Int      @default(0)
+  eventType      String?
+  commercialId   String?
+  driverId       String?
+  truckId        String?
+  comments       String?
+  status         String   @default("draft")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  commercial        User?              @relation("Commercial", fields: [commercialId], references: [id], onDelete: SetNull)
+  driver            User?              @relation("Driver", fields: [driverId], references: [id], onDelete: SetNull)
+  truck             Truck?             @relation(fields: [truckId], references: [id], onDelete: SetNull)
+  orderLines        OrderLine[]
+  modifications     EventModification[]
+  stockReservations StockReservation[]
+  missingItems      MissingItem[]
+  preparationItems  PreparationItem[]
+  materialMovements MaterialMovement[]
+  preparationSessions PreparationSession[]
+
+  @@index([organizationId, date])
+  @@index([organizationId, status])
+  @@map("event")
+}
+
+model OrderLine {
+  id                      String  @id @default(cuid())
+  eventId                 String
+  section                 String
+  productId               String?
+  designation             String
+  quantityRequested       Int
+  quantityAvailableAtOrder Int?
+  locationSnapshot        String?
+  sortOrder               Int     @default(0)
+  notes                   String?
+
+  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([eventId, section])
+  @@map("order_line")
+}
+
+model EventModification {
+  id         String   @id @default(cuid())
+  eventId    String
+  userId     String
+  field      String
+  oldValue   String?
+  newValue   String?
+  entityType String
+  entityId   String?
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, createdAt])
+  @@map("event_modification")
+}
+
+// ─── Catalogue & Stock ─────────────────────────────────────────────────────
+
+model Product {
+  id              String   @id @default(cuid())
+  organizationId  String
+  reference       String
+  name            String
+  category        String?
+  description     String?
+  stockTotal      Int      @default(0)
+  stockAvailable  Int      @default(0)
+  stockReserved   Int      @default(0)
+  stockBroken     Int      @default(0)
+  stockLost       Int      @default(0)
+  primaryPhotoUrl String?
+  qrCodeData      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  photos            ProductPhoto[]
+  locations         ProductLocation[]
+  orderLines        OrderLine[]
+  stockReservations StockReservation[]
+  missingItems      MissingItem[]
+  materialMovements MaterialMovement[]
+  preparationItems  PreparationItem[]
+
+  @@unique([organizationId, reference])
+  @@index([organizationId, name])
+  @@map("product")
+}
+
+model ProductPhoto {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  isPrimary Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_photo")
+}
+
+model ProductLocation {
+  id        String @id @default(cuid())
+  productId String
+  zone      String
+  shelf     String?
+  bin       String?
+  quantity  Int    @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_location")
+}
+
+model WarehouseZone {
+  id             String @id @default(cuid())
+  organizationId String
+  code           String
+  label          String?
+  gridRow        Int?
+  gridCol        Int?
+  sortOrder      Int    @default(0)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, code])
+  @@map("warehouse_zone")
+}
+
+model StockReservation {
+  id                String    @id @default(cuid())
+  productId         String
+  eventId           String
+  quantity          Int
+  status            String    @default("reserved")
+  reservedAt        DateTime  @default(now())
+  expectedReturnAt  DateTime?
+  actualReturnAt    DateTime?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([productId, status])
+  @@index([eventId])
+  @@map("stock_reservation")
+}
+
+model MaterialMovement {
+  id           String   @id @default(cuid())
+  productId    String
+  eventId      String?
+  truckId      String?
+  userId       String
+  movementType String
+  quantity     Int
+  notes        String?
+  timestamp    DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  truck   Truck?  @relation(fields: [truckId], references: [id], onDelete: SetNull)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([productId, timestamp])
+  @@map("material_movement")
+}
+
+// ─── Manquants ─────────────────────────────────────────────────────────────
+
+model MissingItem {
+  id                String   @id @default(cuid())
+  organizationId    String
+  eventId           String
+  productId         String?
+  designation       String?
+  quantityRequested Int
+  quantityFound     Int
+  photoUrl          String?
+  comment           String?
+  status            String   @default("open")
+  assignedToId      String?
+  commercialResponse String?
+  responseType      String?
+  createdById       String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  product      Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+  assignedTo   User?        @relation("AssignedCommercial", fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdBy    User         @relation("MissingCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@index([eventId])
+  @@map("missing_item")
+}
+
+// ─── Préparation ───────────────────────────────────────────────────────────
+
+model PreparationItem {
+  id          String    @id @default(cuid())
+  eventId     String
+  productId   String?
+  designation String
+  quantity    Int
+  validatedAt DateTime?
+  validatedBy String?
+  quantityFound Int?
+
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  validator User?    @relation("Validator", fields: [validatedBy], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@map("preparation_item")
+}
+
+model PreparationSession {
+  id             String   @id @default(cuid())
+  organizationId String
+  eventId        String
+  token          String   @unique
+  permissions    String[]
+  accessVia      String   @default("secure_link")
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  revokedAt      DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("preparation_session")
+}
+
+// ─── Flotte ────────────────────────────────────────────────────────────────
+
+model Truck {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  licensePlate   String?
+  capacity       String?
+  status         String   @default("available")
+  currentLocation String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  events            Event[]
+  materialMovements MaterialMovement[]
+
+  @@map("truck")
+}
+
+model Driver {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String   @unique
+  phone          String?
+  licenseNumber  String?
+  status         String   @default("available")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("driver")
+}
+
+// ─── Notifications & Audit ─────────────────────────────────────────────────
+
+model Notification {
+  id             String    @id @default(cuid())
+  organizationId String
+  userId         String
+  type           String
+  title          String
+  body           String
+  data           Json?
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@map("notification")
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String?
+  action         String
+  entityType     String
+  entityId       String?
+  payload        Json?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+  @@map("audit_log")
+}
+
+// ─── IA Pipeline (V2 — fondations V1) ─────────────────────────────────────
+
+model DocumentImportJob {
+  id             String   @id @default(cuid())
+  organizationId String
+  sourceType     String
+  fileUrl        String
+  status         String   @default("queued")
+  extractedData  Json?
+  errorMessage   String?
+  createdById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("document_import_job")
+}
