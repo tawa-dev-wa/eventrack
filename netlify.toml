@@ -1,0 +1,5 @@
+[build]
+  command = "corepack enable && corepack prepare pnpm@11.5.3 --activate && pnpm install && pnpm build --filter=@eventrack/web"
+
+[build.environment]
+  NODE_VERSION = "22"
