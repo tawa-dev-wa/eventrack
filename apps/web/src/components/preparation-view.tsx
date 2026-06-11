@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 
 
@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@eventrack/ui";
 
-import { Check, Minus, Plus, AlertTriangle, Sparkles } from "lucide-react";
+import { AlertTriangle, Sparkles } from "lucide-react";
 
 import {
 
@@ -18,20 +18,7 @@ import {
 
 import { prepLineStatus } from "@/lib/mock/preparation";
 
-import {
-
-  formatMissingTime,
-
-  isMissingActive,
-
-  needsCommercialAction,
-
-  needsPrepAction,
-
-  RESPONSE_TYPE_LABELS,
-
-} from "@/lib/mock/missing-workflow";
-
+import { isMissingActive } from "@/lib/mock/missing-workflow";
 import type { MockPreparationLine } from "@/lib/mock/types";
 
 import { PrepProgressBar } from "@/components/prep-progress-bar";
@@ -43,8 +30,7 @@ import {
   getProductPrepPriority,
   sortPreparationLinesByLoadingPriority,
 } from "@/lib/mock/prep-sorting";
-import { PrepPackagingBreakdown } from "@/components/prep-packaging-breakdown";
-import { PrepQuantityInput } from "@/components/prep-quantity-input";
+import { PrepLineCard } from "@/components/prep-line-card";
 import { cn } from "@eventrack/ui";
 
 
@@ -296,502 +282,43 @@ export function PreparationView({
         ) : (
 
           displayLines.map((line, index) => {
-
             const status = prepLineStatus(line);
-
-            const isComplete = status === "complete";
-
-            const isPartial = status === "partial";
-
-            const isPending = status === "pending";
-
             const lineMissing = getMissingForPrepLine(line.id);
-
-            const hasActiveMissing = lineMissing !== undefined;
-
-            const awaitingCommercial =
-
-              lineMissing && needsCommercialAction(lineMissing);
-
-            const responseToApply =
-
-              lineMissing && needsPrepAction(lineMissing);
-
-            const priority = getProductPrepPriority(getProduct(line.productId));
             const product = getProduct(line.productId);
             const packSize = product?.packSize ?? 1;
-
-
+            const priority = getProductPrepPriority(product);
 
             return (
-
-              <div
-
+              <PrepLineCard
                 key={line.id}
-
-                className={cn(
-
-                  "rounded-lg border bg-white p-4",
-
-                  isComplete && "border-brand-success/30 bg-brand-success/5",
-
-                  isPartial && "border-brand-warning/40 bg-brand-warning/5",
-
-                  isPending && "border-brand-neutral",
-
-                  responseToApply && "border-brand-secondary/50"
-
-                )}
-
-              >
-
-                <div className="flex items-start gap-3">
-
-                  <button
-
-                    type="button"
-
-                    onClick={() => {
-
-                      if (isComplete) {
-
-                        updatePreparationQuantity(line.id, 0, actor);
-
-                      } else {
-
-                        validatePreparationLine(line.id, actor);
-
-                      }
-
-                    }}
-
-                    className={cn(
-
-                      "mt-0.5 flex shrink-0 items-center justify-center rounded border-2 transition-colors",
-
-                      mobile ? "h-11 w-11" : "h-7 w-7",
-
-                      isComplete
-
-                        ? "border-brand-success bg-brand-success text-white"
-
-                        : "border-brand-primary/30 bg-white hover:border-brand-secondary"
-
-                    )}
-
-                    aria-label={
-
-                      isComplete ? "Décocher" : "Valider la ligne"
-
-                    }
-
-                  >
-
-                    {isComplete && <Check className="h-4 w-4" />}
-
-                  </button>
-
-
-
-                  <div className="min-w-0 flex-1">
-
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-
-                      <div>
-
-                        {smartPrep && (
-
-                          <span className="mr-2 inline-flex h-5 min-w-5 items-center justify-center rounded bg-brand-secondary/10 px-1.5 text-xs font-bold text-brand-secondary">
-
-                            {index + 1}
-
-                          </span>
-
-                        )}
-
-                        <button
-                          type="button"
-                          onClick={() => setProductDetailId(line.productId)}
-                          className={cn(
-                            "text-left font-semibold text-brand-primary hover:text-brand-secondary hover:underline",
-                            mobile && "text-base"
-                          )}
-                        >
-                          {line.designation}
-                          <span className="ml-2 font-normal text-brand-primary/50">
-                            × {line.quantityRequested}
-                          </span>
-                        </button>
-
-                      </div>
-
-                      {smartPrep && (
-
-                        <span className="shrink-0 rounded-full bg-brand-background px-2 py-0.5 text-xs font-medium text-brand-primary/60">
-
-                          Priorité {priority}
-
-                        </span>
-
-                      )}
-
-                    </div>
-
-
-
-                    <div className="mt-2 space-y-2">
-
-                      <PrepPackagingBreakdown
-
-                        quantity={line.quantityRequested}
-
-                        packSize={packSize}
-
-                      />
-
-                      <div>
-
-                        <span
-
-                          className={cn(
-
-                            "text-sm font-bold",
-
-                            isComplete && "text-brand-success",
-
-                            isPartial && "text-brand-warning",
-
-                            isPending && "text-brand-critical"
-
-                          )}
-
-                        >
-
-                          Préparé : {line.quantityPrepared}
-
-                        </span>
-
-                        {line.quantityPrepared > 0 && (
-
-                          <PrepPackagingBreakdown
-
-                            quantity={line.quantityPrepared}
-
-                            packSize={packSize}
-
-                            compact
-
-                            className="mt-1"
-
-                          />
-
-                        )}
-
-                      </div>
-
-                      {isComplete && (
-
-                        <span className="rounded-full bg-brand-success/10 px-2 py-0.5 text-xs font-medium text-brand-success">
-
-                          {line.quantityPrepared} / {line.quantityRequested}
-
-                        </span>
-
-                      )}
-
-                      {awaitingCommercial && !isComplete && (
-
-                        <span className="rounded-full bg-brand-critical/10 px-2 py-0.5 text-xs font-medium text-brand-critical">
-
-                          Manquant déclaré
-
-                        </span>
-
-                      )}
-
-                      {responseToApply && (
-
-                        <span className="rounded-full bg-brand-secondary/10 px-2 py-0.5 text-xs font-medium text-brand-secondary">
-
-                          Remplacement demandé
-
-                        </span>
-
-                      )}
-
-                    </div>
-
-
-
-                    {lineMissing &&
-
-                      lineMissing.workflowStatus === "commercial_response" &&
-
-                      lineMissing.commercialResponse && (
-
-                        <div className="mt-3 rounded-lg border border-brand-secondary/30 bg-brand-secondary/5 p-3">
-
-                          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-brand-secondary">
-
-                            <AlertTriangle className="h-3.5 w-3.5" />
-
-                            Réponse commerciale
-
-                          </p>
-
-                          <p className="mt-1 text-sm font-medium text-brand-primary">
-
-                            {lineMissing.responseType === "replaced"
-
-                              ? "Remplacer :"
-
-                              : lineMissing.responseType
-
-                                ? `${RESPONSE_TYPE_LABELS[lineMissing.responseType]} :`
-
-                                : "Réponse :"}{" "}
-
-                            {lineMissing.commercialResponse}
-
-                          </p>
-
-                          {lineMissing.respondedBy && lineMissing.respondedAt && (
-
-                            <p className="mt-1 text-xs text-brand-primary/50">
-
-                              Réponse de {lineMissing.respondedBy} ·{" "}
-
-                              {formatMissingTime(lineMissing.respondedAt)}
-
-                            </p>
-
-                          )}
-
-                          {lineMissing.responseType === "replaced" && (
-
-                            <Button
-
-                              variant="secondary"
-
-                              size={mobile ? "lg" : "sm"}
-
-                              className={cn(
-
-                                "mt-3",
-
-                                mobile && "h-12 w-full text-base"
-
-                              )}
-
-                              onClick={() =>
-
-                                confirmMissingReplacement(lineMissing.id, actor)
-
-                              }
-
-                            >
-
-                              <Check className="h-4 w-4" />
-
-                              Remplacement effectué
-
-                            </Button>
-
-                          )}
-
-                        </div>
-
-                      )}
-
-
-
-                    {lineMissing &&
-
-                      lineMissing.workflowStatus === "declared" &&
-
-                      !isComplete && (
-
-                        <p className="mt-2 text-xs text-brand-primary/50">
-
-                          En attente de réponse commerciale…
-
-                        </p>
-
-                      )}
-
-
-
-                    {line.validatedBy && line.validatedAt && isComplete && (
-
-                      <p className="mt-2 text-xs text-brand-primary/50">
-
-                        Préparé par {line.validatedBy} ·{" "}
-
-                        {formatMissingTime(line.validatedAt)}
-
-                      </p>
-
-                    )}
-
-
-
-                    {!isComplete && (
-
-                      <div
-
-                        className={cn(
-
-                          "mt-3 flex flex-wrap items-center gap-2",
-
-                          mobile && "flex-col items-stretch"
-
-                        )}
-
-                      >
-
-                        <div
-
-                          className={cn(
-
-                            "flex items-center gap-2",
-
-                            mobile && "justify-center"
-
-                          )}
-
-                        >
-
-                          <button
-
-                            type="button"
-
-                            onClick={() =>
-
-                              updatePreparationQuantity(
-                                line.id,
-                                line.quantityPrepared - 1,
-                                actor
-                              )
-
-                            }
-
-                            className={cn(
-
-                              "flex items-center justify-center rounded-lg border border-brand-neutral bg-white text-brand-primary hover:bg-brand-background",
-
-                              mobile ? "h-12 w-12" : "h-9 w-9"
-
-                            )}
-
-                            aria-label="Diminuer"
-
-                          >
-
-                            <Minus className="h-5 w-5" />
-
-                          </button>
-
-                          <PrepQuantityInput
-                            value={line.quantityPrepared}
-                            max={line.quantityRequested}
-                            mobile={mobile}
-                            onChange={(qty) =>
-                              updatePreparationQuantity(line.id, qty, actor)
-                            }
-                          />
-
-                          <button
-
-                            type="button"
-
-                            onClick={() =>
-
-                              updatePreparationQuantity(
-                                line.id,
-                                line.quantityPrepared + 1,
-                                actor
-                              )
-
-                            }
-
-                            className={cn(
-
-                              "flex items-center justify-center rounded-lg border border-brand-neutral bg-white text-brand-primary hover:bg-brand-background",
-
-                              mobile ? "h-12 w-12" : "h-9 w-9"
-
-                            )}
-
-                            aria-label="Augmenter"
-
-                          >
-
-                            <Plus className="h-5 w-5" />
-
-                          </button>
-
-                        </div>
-
-
-
-                        <Button
-
-                          variant="secondary"
-
-                          size={mobile ? "lg" : "sm"}
-
-                          className={cn(mobile && "h-12 w-full text-base")}
-
-                          onClick={() => validatePreparationLine(line.id, actor)}
-
-                        >
-
-                          Valider
-
-                        </Button>
-
-
-
-                        {(isPartial || isPending) && !hasActiveMissing && (
-
-                          <Button
-
-                            variant="outline"
-
-                            size={mobile ? "lg" : "sm"}
-
-                            className={cn(
-
-                              "border-brand-warning text-brand-warning hover:bg-brand-warning/10",
-
-                              mobile && "h-12 w-full text-base"
-
-                            )}
-
-                            onClick={() => setMissingLine(line)}
-
-                          >
-
-                            <AlertTriangle className="h-4 w-4" />
-
-                            Déclarer manquant
-
-                          </Button>
-
-                        )}
-
-                      </div>
-
-                    )}
-
-                  </div>
-
-                </div>
-
-              </div>
-
+                line={line}
+                index={index}
+                status={status}
+                packSize={packSize}
+                priority={priority}
+                smartPrep={smartPrep}
+                mobile={mobile}
+                lineMissing={lineMissing}
+                onToggleComplete={() => {
+                  if (status === "complete") {
+                    updatePreparationQuantity(line.id, 0, actor);
+                  } else {
+                    validatePreparationLine(line.id, actor);
+                  }
+                }}
+                onOpenProduct={() => setProductDetailId(line.productId)}
+                onQuantityChange={(qty) =>
+                  updatePreparationQuantity(line.id, qty, actor)
+                }
+                onValidate={() => validatePreparationLine(line.id, actor)}
+                onDeclareMissing={() => setMissingLine(line)}
+                onConfirmReplacement={() => {
+                  if (lineMissing) {
+                    confirmMissingReplacement(lineMissing.id, actor);
+                  }
+                }}
+              />
             );
-
           })
 
         )}

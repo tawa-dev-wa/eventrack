@@ -21,7 +21,7 @@ export function CardHeader({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("flex flex-col gap-1 p-5 pb-3", className)} {...props} />
+    <div className={cn("flex flex-col gap-1.5 p-5 pb-2", className)} {...props} />
   );
 }
 
@@ -31,7 +31,10 @@ export function CardTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={cn("text-base font-semibold text-brand-primary", className)}
+      className={cn(
+        "text-lg font-bold leading-snug tracking-tight text-brand-primary",
+        className
+      )}
       {...props}
     />
   );
@@ -43,7 +46,7 @@ export function CardDescription({
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
-      className={cn("text-sm text-brand-primary/60", className)}
+      className={cn("text-sm text-brand-primary/55", className)}
       {...props}
     />
   );

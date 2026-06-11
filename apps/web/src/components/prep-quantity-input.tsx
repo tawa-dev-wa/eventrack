@@ -57,7 +57,7 @@ export function PrepQuantityInput({
       aria-label="Quantité préparée"
       className={cn(
         "text-center font-bold text-brand-primary",
-        mobile ? "h-12 w-20 text-xl" : "h-9 w-20 text-base"
+        mobile ? "h-14 w-24 text-2xl" : "h-11 w-24 text-lg"
       )}
     />
   );
