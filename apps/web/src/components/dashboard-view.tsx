@@ -20,6 +20,10 @@ import {
   CalendarDays,
   ClipboardList,
   Truck,
+  Package,
+  HardHat,
+  Gauge,
+  Clock,
 } from "lucide-react";
 import {
   useMockStore,
@@ -65,13 +69,26 @@ export function DashboardView() {
     stockAllocations,
     getEventPrepProgress,
     getEventMissing,
+    getTodayInventoryMission,
+    getStockReliability,
   } = useMockStore();
+
+  const inventoryMission = getTodayInventoryMission();
+  const stockReliability = getStockReliability();
 
   const [activePanel, setActivePanel] = useState<StatPanelId | null>(null);
   const isMobile = useIsMobile();
 
   const todayEvents = getTodayEvents(events);
   const activeMissing = missingItems.filter(isMissingActive);
+
+  const todayWithPreparer = useMemo(
+    () =>
+      todayEvents.filter(
+        (e) => e.assignedPreparer && e.status !== "cancelled"
+      ),
+    [todayEvents]
+  );
 
   const preparationsInProgress = useMemo(
     () =>
@@ -194,9 +211,17 @@ export function DashboardView() {
                 )}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-medium text-brand-primary">
-                    {event.name.split(" — ")[0]}
-                  </p>
+                  <div className="min-w-0">
+                    <p className="font-medium text-brand-primary">
+                      {event.name.split(" — ")[0]}
+                    </p>
+                    {event.assignedPreparer && (
+                      <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-brand-secondary">
+                        <HardHat className="h-3 w-3" />
+                        {event.assignedPreparer}
+                      </p>
+                    )}
+                  </div>
                   <span
                     className={cn(
                       "text-lg font-bold",
@@ -362,6 +387,100 @@ export function DashboardView() {
       )}
 
       {!isMobile && activePanel && renderInlinePanel(activePanel)}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Link
+          href="/inventory"
+          className="group relative overflow-hidden rounded-2xl border border-brand-secondary/25 bg-gradient-to-br from-brand-secondary/15 via-brand-surface to-brand-surface p-5 shadow-sm transition-all hover:border-brand-secondary/40 hover:shadow-md"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-brand-secondary">
+                <Package className="h-4 w-4" />
+                Inventaire du jour
+              </p>
+              <p className="mt-2 text-2xl font-bold text-brand-primary">
+                {inventoryMission.emoji} {inventoryMission.zoneLabel}
+              </p>
+              <p className="mt-1 text-sm text-brand-primary/60">
+                {inventoryMission.productCount} références
+              </p>
+            </div>
+            <div className="rounded-xl bg-brand-surface px-3 py-2 text-center shadow-sm">
+              <Clock className="mx-auto h-4 w-4 text-brand-secondary" />
+              <p className="mt-1 text-xs text-brand-primary/45">Estimé</p>
+              <p className="font-bold text-brand-primary">
+                {inventoryMission.estimatedMinutes} min
+              </p>
+            </div>
+          </div>
+          <p className="mt-4 text-sm font-medium text-brand-secondary group-hover:underline">
+            Commencer le comptage →
+          </p>
+        </Link>
+
+        <Card className="border-brand-success/25 bg-gradient-to-br from-brand-success/10 to-transparent">
+          <CardContent className="flex h-full flex-col justify-between gap-4 p-5">
+            <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-brand-success">
+              <Gauge className="h-4 w-4" />
+              Fiabilité du stock
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-brand-primary">
+                {stockReliability}
+                <span className="text-2xl text-brand-primary/50">%</span>
+              </p>
+              <p className="mt-1 text-sm text-brand-primary/60">
+                Basé sur les inventaires tournants — sans saisie quotidienne
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {todayWithPreparer.length > 0 && (
+        <Card className="border-brand-secondary/20">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <HardHat className="h-5 w-5 text-brand-secondary" />
+              <CardTitle>Qui prépare quoi</CardTitle>
+            </div>
+            <CardDescription>
+              Préparateurs assignés — progression en temps réel
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-2">
+            {todayWithPreparer.map((event) => {
+              const progress = getEventPrepProgress(event.id);
+              return (
+                <Link
+                  key={event.id}
+                  href={`/preparation?event=${event.id}`}
+                  className="flex items-center gap-4 rounded-xl border border-brand-neutral bg-brand-background/50 p-4 transition-colors hover:border-brand-secondary/30 hover:bg-brand-surface"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-secondary/15 text-lg font-bold text-brand-secondary">
+                    {event.assignedPreparer?.charAt(0)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-brand-primary">
+                      {event.assignedPreparer}
+                    </p>
+                    <p className="truncate text-sm text-brand-primary/55">
+                      {event.name.split(" — ")[0]}
+                    </p>
+                    <div className="mt-2">
+                      <PrepProgressBar progress={progress} compact />
+                    </div>
+                  </div>
+                  <span className="shrink-0 text-xl font-bold text-brand-secondary">
+                    {progress.percent}%
+                  </span>
+                </Link>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

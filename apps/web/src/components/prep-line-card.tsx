@@ -4,6 +4,7 @@ import { Button } from "@eventrack/ui";
 import { Check, Minus, Plus, AlertTriangle } from "lucide-react";
 import { cn } from "@eventrack/ui";
 import { PrepPackagingBreakdown } from "@/components/prep-packaging-breakdown";
+import { ProductPhoto } from "@/components/product-photo";
 import { PrepQuantityInput } from "@/components/prep-quantity-input";
 import { RESPONSE_TYPE_LABELS } from "@/lib/mock/missing-workflow";
 import { formatMissingTime } from "@/lib/mock/missing-workflow";
@@ -21,6 +22,9 @@ export function PrepLineCard({
   priority,
   smartPrep,
   mobile,
+  photoColor,
+  photoUrls,
+  reference,
   lineMissing,
   onToggleComplete,
   onOpenProduct,
@@ -36,6 +40,9 @@ export function PrepLineCard({
   priority: number;
   smartPrep: boolean;
   mobile: boolean;
+  photoColor?: string;
+  photoUrls?: string[];
+  reference?: string;
   lineMissing?: MockMissingItem;
   onToggleComplete: () => void;
   onOpenProduct: () => void;
@@ -71,6 +78,22 @@ export function PrepLineCard({
           isPending && "bg-brand-background/80"
         )}
       >
+        <button
+          type="button"
+          onClick={onOpenProduct}
+          className="shrink-0"
+          aria-label={`Voir ${line.designation}`}
+        >
+          <ProductPhoto
+            name={line.designation}
+            reference={reference ?? line.reference ?? "?"}
+            color={photoColor ?? "#16213E"}
+            photoUrls={photoUrls}
+            size={mobile ? "md" : "sm"}
+            className={mobile ? "h-14 w-14" : undefined}
+          />
+        </button>
+
         <button
           type="button"
           onClick={onToggleComplete}

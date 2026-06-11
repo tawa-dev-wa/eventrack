@@ -109,6 +109,7 @@ export default function EventsPage() {
               <thead>
                 <tr className="border-b border-brand-neutral bg-brand-background/50 text-left text-brand-primary/60">
                   <th className="px-4 py-3 font-medium">Événement</th>
+                  <th className="px-4 py-3 font-medium">Préparateur</th>
                   <th className="px-4 py-3 font-medium">Départ camion</th>
                   <th className="px-4 py-3 font-medium">Préparation</th>
                   <th className="px-4 py-3 font-medium">Manquants</th>
@@ -137,6 +138,9 @@ export default function EventsPage() {
                         <p className="text-xs text-brand-primary/50">
                           {event.commercial}
                         </p>
+                      </td>
+                      <td className="px-4 py-3 text-brand-primary/70">
+                        {event.assignedPreparer ?? "—"}
                       </td>
                       <td className="px-4 py-3 font-medium text-brand-secondary">
                         {formatDepartureTime(event.departureTime)}

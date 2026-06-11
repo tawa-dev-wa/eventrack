@@ -13,6 +13,7 @@ import { EventStatusBadge } from "@/components/status-badges";
 import { PrepProgressBar } from "@/components/prep-progress-bar";
 import { PreparationView } from "@/components/preparation-view";
 import { PageHeader } from "@eventrack/ui";
+import { HardHat } from "lucide-react";
 
 function PreparationPageContent() {
   const searchParams = useSearchParams();
@@ -60,6 +61,12 @@ function PreparationPageContent() {
                   <p className="mt-1 text-base font-semibold text-brand-secondary">
                     Départ camion : {formatDepartureTime(event.departureTime)}
                   </p>
+                  {event.assignedPreparer && (
+                    <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-brand-primary/70">
+                      <HardHat className="h-4 w-4 text-brand-secondary" />
+                      {event.assignedPreparer}
+                    </p>
+                  )}
                 </div>
                 <EventStatusBadge status={event.status} />
               </div>

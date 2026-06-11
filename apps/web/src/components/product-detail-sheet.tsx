@@ -5,11 +5,8 @@ import { Modal } from "@/components/modal";
 import { ProductPhoto } from "@/components/product-photo";
 import { AvailabilityBadge } from "@/components/status-badges";
 import { useMockStore } from "@/lib/mock/store";
-import {
-  getProductBreakageStats,
-  STOCK_BREAK_LABELS,
-} from "@/lib/mock/stock-ops";
 import { formatMissingTime } from "@/lib/mock/missing-workflow";
+import { getCategoryMeta } from "@/lib/category-icons";
 import { cn } from "@eventrack/ui";
 
 export function ProductDetailSheet({
@@ -23,7 +20,6 @@ export function ProductDetailSheet({
     getProduct,
     getProductAllocations,
     getProductStockAdjustments,
-    stockAdjustments,
   } = useMockStore();
   const [photoIndex, setPhotoIndex] = useState(0);
 
@@ -36,11 +32,11 @@ export function ProductDetailSheet({
 
   const photos = product.photoUrls ?? [];
   const allocations = getProductAllocations(product.id).filter(
-    (a) => a.status !== "available" && a.status !== "broken"
+    (a) => a.status !== "available"
   );
-  const breakage = getProductBreakageStats(stockAdjustments, product.id);
   const recentAdjustments = getProductStockAdjustments(product.id).slice(0, 5);
   const locationParts = product.location.split(" · ");
+  const meta = getCategoryMeta(product.category);
 
   return (
     <Modal open={!!productId} onClose={onClose} title={product.name}>
@@ -70,36 +66,21 @@ export function ProductDetailSheet({
                 )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={url}
-                  alt=""
-                  className="h-16 w-16 object-cover"
-                />
+                <img src={url} alt="" className="h-16 w-16 object-cover" />
               </button>
             ))}
           </div>
         )}
 
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ${meta.color}`}
+        >
+          {meta.emoji} {meta.label}
+        </span>
+
         <p className="text-sm text-brand-primary/60">
-          Réf. {product.reference} · {product.category}
+          Réf. {product.reference}
         </p>
-
-        <div className="rounded-lg border border-brand-neutral px-3 py-2 text-sm">
-          <span className="text-brand-primary/50">Priorité de chargement</span>
-          <span className="ml-2 font-bold text-brand-secondary">
-            {product.prepPriority}
-          </span>
-          <span className="ml-1 text-brand-primary/40">/ 100</span>
-        </div>
-
-        <div className="rounded-lg border border-brand-neutral px-3 py-2 text-sm">
-          <span className="text-brand-primary/50">Conditionnement</span>
-          <span className="ml-2 font-bold text-brand-primary">
-            {product.packSize > 1
-              ? `${product.packSize} unités / caisse`
-              : "À l'unité"}
-          </span>
-        </div>
 
         <div className="rounded-lg bg-brand-background p-4 text-sm">
           <p className="font-medium text-brand-primary">Emplacement</p>
@@ -114,50 +95,29 @@ export function ProductDetailSheet({
           )}
         </div>
 
-        <dl className="grid grid-cols-2 gap-3 text-sm">
-          <div>
+        <dl className="grid grid-cols-3 gap-3 text-sm">
+          <div className="rounded-lg border border-brand-neutral p-3 text-center">
             <dt className="text-brand-primary/50">Stock total</dt>
             <dd className="text-lg font-bold">{product.stockTotal}</dd>
           </div>
-          <div>
-            <dt className="text-brand-primary/50">Disponible</dt>
-            <dd className="text-lg font-bold text-brand-success">
-              {product.stockAvailable}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-brand-primary/50">Réservé</dt>
+          <div className="rounded-lg border border-brand-alert/30 bg-brand-alert/5 p-3 text-center">
+            <dt className="text-brand-primary/50">En prestation</dt>
             <dd className="text-lg font-bold text-brand-alert">
               {product.stockReserved}
             </dd>
           </div>
-          <div>
-            <dt className="text-brand-primary/50">Cassé</dt>
-            <dd className="text-lg font-bold text-brand-critical">
-              {product.stockBroken}
+          <div className="rounded-lg border border-brand-success/30 bg-brand-success/5 p-3 text-center">
+            <dt className="text-brand-primary/50">Au dépôt</dt>
+            <dd className="text-lg font-bold text-brand-success">
+              {product.stockAvailable}
             </dd>
           </div>
         </dl>
 
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-lg border border-brand-neutral p-3">
-            <p className="text-brand-primary/50">Cassé ce mois-ci</p>
-            <p className="text-xl font-bold text-brand-critical">
-              {breakage.monthCount}
-            </p>
-          </div>
-          <div className="rounded-lg border border-brand-neutral p-3">
-            <p className="text-brand-primary/50">Cassé cette année</p>
-            <p className="text-xl font-bold text-brand-critical">
-              {breakage.yearCount}
-            </p>
-          </div>
-        </div>
-
         {allocations.length > 0 && (
           <div>
             <p className="mb-2 text-sm font-medium text-brand-primary">
-              Actuellement utilisé sur
+              Actuellement en prestation
             </p>
             <ul className="space-y-2">
               {allocations.map((a) => (
@@ -176,11 +136,6 @@ export function ProductDetailSheet({
                     {a.quantity} unité(s)
                     {a.truckName && ` · ${a.truckName}`}
                   </p>
-                  {a.expectedReturn && (
-                    <p className="mt-1 text-xs text-brand-primary/50">
-                      Retour prévu : {a.expectedReturn}
-                    </p>
-                  )}
                 </li>
               ))}
             </ul>
@@ -190,28 +145,26 @@ export function ProductDetailSheet({
         {recentAdjustments.length > 0 && (
           <div>
             <p className="mb-2 text-sm font-medium text-brand-primary">
-              Historique récent
+              Derniers ajustements
             </p>
             <ul className="space-y-2 text-sm">
-              {recentAdjustments.map((entry) => (
+              {recentAdjustments.map((adj) => (
                 <li
-                  key={entry.id}
-                  className="rounded-md bg-brand-background px-3 py-2"
+                  key={adj.id}
+                  className="rounded-lg border border-brand-neutral/60 px-3 py-2"
                 >
-                  <p className="font-medium text-brand-primary">
-                    {entry.note ||
-                      (entry.type === "add" && `+${entry.quantity} entrepôt`) ||
-                      (entry.type === "remove" &&
-                        `-${entry.quantity} entrepôt`) ||
-                      (entry.type === "broken" &&
-                        `${entry.quantity} cassé(s)${
-                          entry.context
-                            ? ` · ${STOCK_BREAK_LABELS[entry.context]}`
-                            : ""
-                        }`)}
-                  </p>
-                  <p className="text-xs text-brand-primary/50">
-                    {entry.userName} · {formatMissingTime(entry.at)}
+                  <div className="flex justify-between gap-2">
+                    <span className="font-medium text-brand-primary">
+                      {adj.type === "inventory" ? "Inventaire" : "Ajustement"}
+                    </span>
+                    <span className="text-brand-primary/40">
+                      {formatMissingTime(adj.at)}
+                    </span>
+                  </div>
+                  <p className="text-brand-primary/60">
+                    {adj.quantity > 0 ? "+" : ""}
+                    {adj.quantity} · {adj.userName}
+                    {adj.note && ` — ${adj.note}`}
                   </p>
                 </li>
               ))}

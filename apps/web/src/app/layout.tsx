@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AppProviders } from "@/components/providers";
+import { PwaRegister } from "@/components/pwa-register";
 import "./globals.css";
 
 const inter = Inter({
@@ -16,6 +17,12 @@ export const metadata: Metadata = {
   },
   description:
     "Toute votre logistique événementielle, au même endroit.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Eventrack",
+  },
   icons: {
     icon: "/logo-icon.png",
     apple: "/logo-icon.png",
@@ -37,7 +44,10 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          <PwaRegister />
+          {children}
+        </AppProviders>
       </body>
     </html>
   );

@@ -22,6 +22,7 @@ export const APP_NAV_ITEMS = [
   { href: "/trucks", label: "Camions", icon: Truck },
   { href: "/drivers", label: "Chauffeurs", icon: UserCircle },
   { href: "/stock", label: "Matériel & Stock", icon: Package },
+  { href: "/inventory", label: "Inventaire", icon: ClipboardCheck },
   { href: "/missing", label: "Manquants", icon: AlertTriangle },
   { href: "/returns", label: "Retours", icon: RotateCcw },
   { href: "/reports", label: "Rapports", icon: BarChart3 },

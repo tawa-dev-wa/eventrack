@@ -25,8 +25,8 @@ import { Tabs } from "@/components/tabs";
 import { OrderFormView } from "@/components/order-form-view";
 import { PreparationView } from "@/components/preparation-view";
 import { PrepProgressBar } from "@/components/prep-progress-bar";
-import { PrepQrPanel } from "@/components/prep-qr-panel";
 import { PrepActionHistory } from "@/components/prep-action-history";
+import { HardHat } from "lucide-react";
 
 export function EventDetailView({ eventId }: { eventId: string }) {
   const router = useRouter();
@@ -144,12 +144,18 @@ export function EventDetailView({ eventId }: { eventId: string }) {
                     <dt className="text-brand-primary/50">Commercial</dt>
                     <dd className="font-medium">{event.commercial}</dd>
                   </div>
+                  {event.assignedPreparer && (
+                    <div>
+                      <dt className="text-brand-primary/50">Préparateur</dt>
+                      <dd className="flex items-center gap-1.5 font-medium text-brand-secondary">
+                        <HardHat className="h-4 w-4" />
+                        {event.assignedPreparer}
+                      </dd>
+                    </div>
+                  )}
                 </dl>
                 <div className="mt-4 border-t border-brand-neutral pt-4">
                   <PrepProgressBar progress={progress} />
-                </div>
-                <div className="mt-4">
-                  <PrepQrPanel event={event} compact />
                 </div>
               </CardContent>
             </Card>
@@ -159,7 +165,6 @@ export function EventDetailView({ eventId }: { eventId: string }) {
 
           {tab === "preparation" && event && (
             <div className="prep-print-area space-y-4">
-              <PrepQrPanel event={event} />
               <Card>
                 <CardHeader>
                   <CardTitle>Historique des actions</CardTitle>

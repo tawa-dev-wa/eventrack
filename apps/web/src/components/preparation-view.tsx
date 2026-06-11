@@ -25,7 +25,8 @@ import { PrepProgressBar } from "@/components/prep-progress-bar";
 
 import { DeclareMissingModal } from "@/components/declare-missing-modal";
 import { ProductDetailSheet } from "@/components/product-detail-sheet";
-import { usePreparer } from "@/lib/mock/preparer-context";
+import { cachePrepBundle, queueOfflineMutation } from "@/lib/offline/prep-cache";
+import { useOnlineStatus } from "@/lib/offline/use-offline";
 import {
   getProductPrepPriority,
   sortPreparationLinesByLoadingPriority,
@@ -41,8 +42,6 @@ export function PreparationView({
 
   mobile = false,
 
-  interim = false,
-
   defaultSmartPrep = false,
 
 }: {
@@ -50,8 +49,6 @@ export function PreparationView({
   eventId: string;
 
   mobile?: boolean;
-
-  interim?: boolean;
 
   defaultSmartPrep?: boolean;
 
@@ -81,10 +78,13 @@ export function PreparationView({
 
     syncPreparationFromOrder,
 
+    getOrderLines,
+
+    getEventMissing,
+
   } = useMockStore();
 
-  const { name: preparerName } = usePreparer();
-  const actor = preparerName || "Kevin";
+  const { online } = useOnlineStatus();
 
   const [missingLine, setMissingLine] = useState<MockPreparationLine | null>(
     null
@@ -110,12 +110,28 @@ export function PreparationView({
 
 
   useEffect(() => {
-
     syncPreparationFromOrder(eventId);
-
   }, [eventId, syncPreparationFromOrder]);
 
+  const actor = event?.assignedPreparer ?? "Kevin";
 
+  useEffect(() => {
+    if (!event) return;
+    const productIds = new Set(
+      getPreparationLines(eventId).map((l) => l.productId)
+    );
+    cachePrepBundle({
+      eventId,
+      cachedAt: new Date().toISOString(),
+      event,
+      orderLines: getOrderLines(eventId),
+      preparationLines: getPreparationLines(eventId),
+      products: [...productIds]
+        .map((id) => getProduct(id))
+        .filter(Boolean),
+      missingItems: getEventMissing(eventId),
+    });
+  }, [event, eventId, getOrderLines, getPreparationLines, getProduct, getEventMissing]);
 
   if (!event) return null;
 
@@ -125,7 +141,7 @@ export function PreparationView({
 
     <div className={cn("space-y-4", mobile && "pb-8")}>
 
-      {mobile && !interim && (
+      {mobile && (
 
         <div className="rounded-lg border border-brand-neutral bg-white p-4">
 
@@ -134,9 +150,10 @@ export function PreparationView({
           </h2>
 
           <p className="mt-1 text-sm font-medium text-brand-secondary">
-
             Départ camion : {formatDepartureTime(event.departureTime)}
-
+          </p>
+          <p className="mt-1 text-sm text-brand-primary/60">
+            Préparateur : {actor}
           </p>
 
           <div className="mt-3">
@@ -300,6 +317,9 @@ export function PreparationView({
                 priority={priority}
                 smartPrep={smartPrep}
                 mobile={mobile}
+                photoColor={product?.photoColor}
+                photoUrls={product?.photoUrls}
+                reference={product?.reference}
                 lineMissing={lineMissing}
                 onToggleComplete={() => {
                   if (status === "complete") {
@@ -309,10 +329,24 @@ export function PreparationView({
                   }
                 }}
                 onOpenProduct={() => setProductDetailId(line.productId)}
-                onQuantityChange={(qty) =>
-                  updatePreparationQuantity(line.id, qty, actor)
-                }
-                onValidate={() => validatePreparationLine(line.id, actor)}
+                onQuantityChange={(qty) => {
+                  if (!online) {
+                    queueOfflineMutation({
+                      type: "update_prep_qty",
+                      payload: { lineId: line.id, qty, actor },
+                    });
+                  }
+                  updatePreparationQuantity(line.id, qty, actor);
+                }}
+                onValidate={() => {
+                  if (!online) {
+                    queueOfflineMutation({
+                      type: "validate_prep_line",
+                      payload: { lineId: line.id, actor },
+                    });
+                  }
+                  validatePreparationLine(line.id, actor);
+                }}
                 onDeclareMissing={() => setMissingLine(line)}
                 onConfirmReplacement={() => {
                   if (lineMissing) {

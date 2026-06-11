@@ -54,19 +54,25 @@ import type {
 
   MockStore,
 
-  StockBreakOrigin,
+  MockInventoryLine,
+
+  MockInventorySession,
 } from "./types";
 import {
-  applyBrokenQuantity,
   applyDepotDelta,
   buildStockAdjustment,
   getDepotAllocation,
   updateProductStock,
 } from "./stock-ops";
 import {
-  randomPrepToken,
-  slugifyEventName,
-} from "./prep-access";
+  computeStockReliability,
+  estimateMissionMinutes,
+  getExpectedDepotStock,
+  getMissionProducts,
+  getOnPrestationCount,
+  getRotationForDate,
+} from "@/lib/inventory";
+import { DEMO_DATE } from "@/lib/demo-date";
 
 import {
 
@@ -327,13 +333,24 @@ interface MockStoreContextValue extends MockStore {
     userName?: string
   ) => { ok: true } | { ok: false; error: string };
 
-  declareStockBroken: (
-    productId: string,
-    quantity: number,
-    origin: StockBreakOrigin,
-    note?: string,
-    userName?: string
-  ) => { ok: true } | { ok: false; error: string };
+  getTodayInventoryMission: (date?: string) => {
+    zoneId: string;
+    zoneLabel: string;
+    emoji: string;
+    productCount: number;
+    estimatedMinutes: number;
+    products: MockProduct[];
+  };
+
+  submitInventorySession: (
+    counts: { productId: string; countedDepot: number }[],
+    userName?: string,
+    date?: string
+  ) => MockInventorySession;
+
+  getInventoryHistory: () => MockInventorySession[];
+
+  getStockReliability: () => number;
 
   getEventPrepActions: (eventId: string) => MockPrepAction[];
 
@@ -743,10 +760,6 @@ export function MockStoreProvider({
       status: "draft" as EventStatus,
 
       comments: input.comments ?? "",
-
-      prepSlug: slugifyEventName(input.name),
-
-      prepToken: randomPrepToken(),
 
       createdAt: new Date().toISOString(),
 
@@ -1806,8 +1819,8 @@ export function MockStoreProvider({
         const adjustment = buildStockAdjustment(
           {
             productId,
-            type: delta > 0 ? "add" : "remove",
-            quantity: Math.abs(delta),
+            type: "manual",
+            quantity: delta,
             note,
             userName,
           },
@@ -1841,106 +1854,140 @@ export function MockStoreProvider({
     []
   );
 
-  const declareStockBroken = useCallback(
-    (
-      productId: string,
-      quantity: number,
-      context: StockBreakOrigin,
-      note?: string,
-      userName = "Kevin"
-    ) => {
-      if (quantity <= 0) return { ok: false as const, error: "Quantité invalide" };
-
-      let result: { ok: true } | { ok: false; error: string } = {
-        ok: false,
-        error: "Produit introuvable",
+  const getTodayInventoryMission = useCallback(
+    (date = DEMO_DATE) => {
+      const rotation = getRotationForDate(date);
+      const missionProducts = getMissionProducts(store.products, date);
+      return {
+        zoneId: rotation.zoneId,
+        zoneLabel: rotation.label,
+        emoji: rotation.emoji,
+        productCount: missionProducts.length,
+        estimatedMinutes: estimateMissionMinutes(missionProducts.length),
+        products: missionProducts,
       };
+    },
+    [store.products]
+  );
+
+  const submitInventorySession = useCallback(
+    (
+      counts: { productId: string; countedDepot: number }[],
+      userName = "Kevin",
+      date = DEMO_DATE
+    ) => {
+      const rotation = getRotationForDate(date);
+      const sessionId = uid("inv");
+      const completedAt = new Date().toISOString();
+      const lines: MockInventoryLine[] = [];
+      const time = new Intl.DateTimeFormat("fr-FR", {
+        timeZone: "Europe/Paris",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date());
 
       setStore((prev) => {
-        const product = prev.products.find((p) => p.id === productId);
-        if (!product) return prev;
+        let next = { ...prev };
 
-        const depot = getDepotAllocation(prev.stockAllocations, productId);
-        const depotQty = depot?.quantity ?? 0;
-        if (quantity > depotQty) {
-          result = {
-            ok: false,
-            error: `Stock dépôt insuffisant (${depotQty} dispo)`,
-          };
-          return prev;
+        for (const { productId, countedDepot } of counts) {
+          const product = prev.products.find((p) => p.id === productId);
+          if (!product) continue;
+
+          const expectedDepot = getExpectedDepotStock(product);
+          const variance = countedDepot - expectedDepot;
+
+          lines.push({
+            productId,
+            productName: product.name,
+            reference: product.reference,
+            stockTotal: product.stockTotal,
+            onPrestation: getOnPrestationCount(product),
+            expectedDepot,
+            countedDepot,
+            variance,
+          });
+
+          if (variance !== 0) {
+            const adjustment = buildStockAdjustment(
+              {
+                productId,
+                type: "inventory",
+                quantity: variance,
+                note: `Inventaire ${rotation.label}`,
+                userName,
+              },
+              () => uid("adj")
+            );
+
+            next = {
+              ...next,
+              products: next.products.map((p) =>
+                p.id === productId
+                  ? updateProductStock(p, {
+                      stockAvailable: countedDepot,
+                      stockTotal: p.stockTotal + variance,
+                    })
+                  : p
+              ),
+              stockAllocations: applyDepotDelta(
+                next.stockAllocations,
+                productId,
+                variance,
+                () => uid("sa")
+              ),
+              stockAdjustments: [adjustment, ...next.stockAdjustments],
+              modifications: [
+                {
+                  id: uid("mod"),
+                  eventId: "",
+                  eventName: "Inventaire",
+                  userName,
+                  time,
+                  detail: `${product.name} — dépôt ${expectedDepot} → ${countedDepot} (${variance >= 0 ? "+" : ""}${variance})`,
+                },
+                ...next.modifications,
+              ],
+            };
+          }
         }
 
-        const time = new Intl.DateTimeFormat("fr-FR", {
-          timeZone: "Europe/Paris",
-          hour: "2-digit",
-          minute: "2-digit",
-        }).format(new Date());
-
-        const contextLabel =
-          context === "plonge"
-            ? "plonge"
-            : context === "preparation"
-              ? "préparation"
-              : context === "retour_event"
-                ? "retour événement"
-                : context === "transport"
-                  ? "transport"
-                  : context === "entrepot"
-                    ? "entrepôt"
-                    : "autre";
-
-        const mod: MockModification = {
-          id: uid("mod"),
-          eventId: "",
-          eventName: "Stock dépôt",
+        const session: MockInventorySession = {
+          id: sessionId,
+          date,
+          zoneId: rotation.zoneId,
+          zoneLabel: rotation.label,
           userName,
-          time,
-          detail: `${product.name} — ${quantity} cassé(s) (${contextLabel})${note ? ` — ${note}` : ""}`,
+          lines,
+          completedAt,
         };
 
-        const adjustment = buildStockAdjustment(
-          {
-            productId,
-            type: "broken",
-            quantity,
-            context,
-            note,
-            userName,
-          },
-          () => uid("adj")
-        );
-
-        result = { ok: true };
         return {
-          ...prev,
-          products: prev.products.map((p) =>
-            p.id === productId
-              ? updateProductStock(p, {
-                  stockAvailable: p.stockAvailable - quantity,
-                  stockTotal: p.stockTotal - quantity,
-                  stockBroken: p.stockBroken + quantity,
-                })
-              : p
-          ),
-          stockAllocations: applyBrokenQuantity(
-            applyDepotDelta(
-              prev.stockAllocations,
-              productId,
-              -quantity,
-              () => uid("sa")
-            ),
-            productId,
-            quantity,
-            () => uid("sa")
-          ),
-          stockAdjustments: [adjustment, ...prev.stockAdjustments],
-          modifications: [mod, ...prev.modifications],
+          ...next,
+          inventorySessions: [session, ...next.inventorySessions],
         };
       });
 
-      return result;
+      return {
+        id: sessionId,
+        date,
+        zoneId: rotation.zoneId,
+        zoneLabel: rotation.label,
+        userName,
+        lines,
+        completedAt,
+      };
     },
     []
+  );
+
+  const getInventoryHistory = useCallback(
+    () => store.inventorySessions,
+    [store.inventorySessions]
+  );
+
+  const getStockReliability = useCallback(
+    () => computeStockReliability(store.inventorySessions),
+    [store.inventorySessions]
   );
 
   const updateProductPrepPriority = useCallback(
@@ -2031,7 +2078,10 @@ export function MockStoreProvider({
 
       adjustDepotStock,
 
-      declareStockBroken,
+      getTodayInventoryMission,
+      submitInventorySession,
+      getInventoryHistory,
+      getStockReliability,
       updateProductPrepPriority,
       updateProductPackSize,
 
@@ -2105,7 +2155,10 @@ export function MockStoreProvider({
 
       adjustDepotStock,
 
-      declareStockBroken,
+      getTodayInventoryMission,
+      submitInventorySession,
+      getInventoryHistory,
+      getStockReliability,
       updateProductPrepPriority,
       updateProductPackSize,
 

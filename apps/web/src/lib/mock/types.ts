@@ -140,13 +140,34 @@ export interface MockEvent {
   guestsChildren: number;
   eventType: string;
   commercial: string;
+  /** Préparateur assigné à cette commande. */
+  assignedPreparer?: string;
   driver?: string;
   truckId?: string;
   status: EventStatus;
   comments: string;
-  prepSlug: string;
-  prepToken: string;
   createdAt: string;
+}
+
+export interface MockInventoryLine {
+  productId: string;
+  productName: string;
+  reference: string;
+  expectedDepot: number;
+  countedDepot: number;
+  variance: number;
+  onPrestation: number;
+  stockTotal: number;
+}
+
+export interface MockInventorySession {
+  id: string;
+  date: string;
+  zoneId: string;
+  zoneLabel: string;
+  userName: string;
+  lines: MockInventoryLine[];
+  completedAt: string;
 }
 
 export interface MockPreparationLine {
@@ -162,23 +183,11 @@ export interface MockPreparationLine {
   validatedBy?: string;
 }
 
-export type StockBreakOrigin =
-  | "retour_event"
-  | "plonge"
-  | "entrepot"
-  | "preparation"
-  | "transport"
-  | "autre";
-
-/** @deprecated alias */
-export type StockBreakContext = StockBreakOrigin;
-
 export interface MockStockAdjustment {
   id: string;
   productId: string;
-  type: "add" | "remove" | "broken";
+  type: "inventory" | "manual";
   quantity: number;
-  context?: StockBreakOrigin;
   note?: string;
   userName: string;
   at: string;
@@ -194,6 +203,7 @@ export type MockStore = {
   prepActions: MockPrepAction[];
   stockAllocations: MockStockAllocation[];
   stockAdjustments: MockStockAdjustment[];
+  inventorySessions: MockInventorySession[];
   modifications: MockModification[];
   trucks: MockTruck[];
 };
