@@ -1,5 +1,9 @@
 [build]
   command = "corepack enable && corepack prepare pnpm@11.5.3 --activate && pnpm install && pnpm build --filter=@eventrack/web"
+  publish = "apps/web/.next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 [build.environment]
   NODE_VERSION = "22"
