@@ -6,12 +6,7 @@ const rootDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..")
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: rootDir,
-  transpilePackages: [
-    "@eventrack/ui",
-    "@eventrack/shared",
-    "@eventrack/auth",
-    "@eventrack/database",
-  ],
+  transpilePackages: ["@eventrack/ui", "@eventrack/shared", "@eventrack/auth"],
 };
 
 export default nextConfig;

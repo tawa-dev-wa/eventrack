@@ -122,6 +122,15 @@ export default function LoginPage() {
                 >
                   {loading ? "Connexion..." : "Se connecter"}
                 </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => router.push("/dashboard")}
+                >
+                  Entrer en mode démo
+                </Button>
               </form>
             </CardContent>
           </Card>

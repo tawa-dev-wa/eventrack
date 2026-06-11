@@ -12,6 +12,11 @@
     "db:seed": "turbo db:seed",
     "db:studio": "pnpm --filter @eventrack/database studio"
   },
+  "dependencies": {
+    "next": "^15.3.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
   "devDependencies": {
     "turbo": "^2.5.4",
     "typescript": "^5.8.3"

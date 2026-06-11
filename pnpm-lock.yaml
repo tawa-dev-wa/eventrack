@@ -7,6 +7,16 @@ settings:
 importers:
 
   .:
+    dependencies:
+      next:
+        specifier: ^15.3.3
+        version: 15.5.19(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react:
+        specifier: ^19.1.0
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.2.7(react@19.2.7)
     devDependencies:
       turbo:
         specifier: ^2.5.4
@@ -20,18 +30,12 @@ importers:
       '@eventrack/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@eventrack/database':
-        specifier: workspace:*
-        version: link:../../packages/database
       '@eventrack/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@eventrack/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      better-auth:
-        specifier: ^1.2.9
-        version: 1.6.15(@prisma/client@6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3))(next@15.5.19(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(prisma@6.19.3(typescript@5.9.3))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       lucide-react:
         specifier: ^0.513.0
         version: 0.513.0(react@19.2.7)
