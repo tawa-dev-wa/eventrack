@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@eventrack/ui";
@@ -23,6 +24,7 @@ import { PrepActionHistory } from "@/components/prep-action-history";
 export function EventDetailView({ eventId }: { eventId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isMobile = useIsMobile();
   const tab = searchParams.get("tab") ?? "summary";
   const {
     getEvent,
@@ -155,7 +157,7 @@ export function EventDetailView({ eventId }: { eventId: string }) {
                   <PrepActionHistory actions={getEventPrepActions(eventId)} />
                 </CardContent>
               </Card>
-              <PreparationView eventId={eventId} mobile={false} />
+              <PreparationView eventId={eventId} mobile={isMobile} />
             </div>
           )}
 

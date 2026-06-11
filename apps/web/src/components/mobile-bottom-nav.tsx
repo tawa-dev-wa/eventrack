@@ -16,7 +16,10 @@ export function MobileBottomNav() {
   return (
     <>
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-brand-neutral bg-white md:hidden"
+        className={cn(
+          "fixed bottom-0 left-0 right-0 border-t border-brand-neutral bg-white md:hidden",
+          menuOpen ? "z-[60]" : "z-50"
+        )}
         aria-label="Navigation principale"
       >
         <div className="flex items-stretch justify-around px-1 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
@@ -34,8 +37,10 @@ export function MobileBottomNav() {
                 <button
                   key="menu"
                   type="button"
-                  onClick={() => setMenuOpen(true)}
-                  className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2"
+                  onClick={() => setMenuOpen((open) => !open)}
+                  className="relative flex min-h-11 min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 px-1 py-2"
+                  aria-expanded={menuOpen}
+                  aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
                 >
                   <Icon
                     className={cn(
@@ -63,7 +68,7 @@ export function MobileBottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2"
+                className="relative flex min-h-11 min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 px-1 py-2"
               >
                 <span className="relative">
                   <Icon

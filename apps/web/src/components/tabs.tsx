@@ -19,7 +19,7 @@ export function Tabs({ tabs, active, onChange, className }: TabsProps) {
             type="button"
             onClick={() => onChange(tab.id)}
             className={cn(
-              "relative shrink-0 px-4 py-2.5 text-sm font-medium transition-colors",
+              "relative min-h-11 shrink-0 touch-manipulation px-4 py-2.5 text-sm font-medium transition-colors",
               active === tab.id
                 ? "text-brand-secondary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-brand-secondary"
                 : "text-brand-primary/50 hover:text-brand-primary"

@@ -23,9 +23,26 @@
     @apply border-brand-neutral;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+    overflow-y: scroll;
+  }
+
   body {
     @apply bg-brand-background text-brand-primary antialiased;
     font-family: var(--font-sans);
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  a,
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea,
+  label {
+    touch-action: manipulation;
   }
 }
 

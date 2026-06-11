@@ -26,15 +26,16 @@ export function DashboardStatCard({
       onClick={onClick}
       aria-expanded={active}
       className={cn(
-        "group w-full rounded-xl text-left transition-all duration-200",
-        "hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary/40",
+        "group w-full touch-manipulation rounded-xl text-left transition-all duration-200",
+        "active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary/40",
+        "md:hover:-translate-y-0.5 md:hover:shadow-md",
         active && "ring-2 ring-brand-secondary/50 shadow-md"
       )}
     >
       <Card
         className={cn(
-          "h-full cursor-pointer border-brand-neutral transition-colors",
-          "group-hover:border-brand-secondary/40 group-hover:bg-brand-background/30",
+          "h-full border-brand-neutral transition-colors",
+          "md:group-hover:border-brand-secondary/40 md:group-hover:bg-brand-background/30",
           active && "border-brand-secondary/40 bg-brand-secondary/5"
         )}
       >
@@ -42,7 +43,7 @@ export function DashboardStatCard({
           <div
             className={cn(
               "flex h-10 w-10 items-center justify-center rounded-lg bg-brand-secondary/10 transition-colors",
-              "group-hover:bg-brand-secondary/15"
+              "md:group-hover:bg-brand-secondary/15"
             )}
           >
             <Icon className="h-5 w-5 text-brand-secondary" />
@@ -53,8 +54,13 @@ export function DashboardStatCard({
               <p className="text-2xl font-bold text-brand-primary">{value}</p>
               <StatusIndicator level={level} />
             </div>
-            <p className="mt-1 flex items-center gap-1 text-xs font-medium text-brand-secondary opacity-0 transition-opacity group-hover:opacity-100">
-              Voir le détail
+            <p
+              className={cn(
+                "mt-1 flex items-center gap-1 text-xs font-medium text-brand-secondary transition-opacity",
+                active ? "opacity-100" : "opacity-100 md:opacity-0 md:group-hover:opacity-100"
+              )}
+            >
+              {active ? "Masquer le détail" : "Voir le détail"}
               <ChevronRight className="h-3.5 w-3.5" />
             </p>
           </div>
@@ -62,7 +68,7 @@ export function DashboardStatCard({
             className={cn(
               "h-5 w-5 shrink-0 text-brand-primary/30 transition-transform",
               active && "rotate-90 text-brand-secondary",
-              "group-hover:text-brand-secondary"
+              "md:group-hover:text-brand-secondary"
             )}
           />
         </CardContent>

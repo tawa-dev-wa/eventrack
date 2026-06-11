@@ -25,13 +25,13 @@ export function AppShell({
   mobileFab,
 }: AppShellProps) {
   return (
-    <div className="flex h-[100dvh] min-h-[100dvh] overflow-hidden">
-      <div className="hidden md:flex">
+    <div className="flex min-h-dvh w-full">
+      <div className="hidden h-dvh shrink-0 md:sticky md:top-0 md:flex">
         <Sidebar missingCount={missingCount} />
       </div>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex h-24 shrink-0 items-center justify-between border-b border-brand-neutral bg-white px-4 md:h-20 md:px-6">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-40 flex h-24 shrink-0 items-center justify-between border-b border-brand-neutral bg-white px-4 md:h-20 md:px-6">
           <Link href="/dashboard" className="shrink-0 md:hidden">
             <Logo variant="full" className="h-20 w-auto" />
           </Link>
@@ -65,7 +65,7 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain bg-brand-background p-4 pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:p-6 md:pb-6">
+        <main className="flex-1 bg-brand-background p-4 pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:p-6 md:pb-6">
           {children}
         </main>
 

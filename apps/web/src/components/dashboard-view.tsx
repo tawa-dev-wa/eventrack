@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { Modal } from "@/components/modal";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import {
   Badge,
   Card,
@@ -32,6 +34,13 @@ import { cn } from "@eventrack/ui";
 
 type StatPanelId = "events" | "missing" | "preparations" | "returns";
 
+const PANEL_TITLES: Record<StatPanelId, string> = {
+  events: "Événements du jour",
+  missing: "Manquants actifs",
+  preparations: "Préparations en cours",
+  returns: "Retours attendus",
+};
+
 export function DashboardView() {
   const {
     events,
@@ -43,6 +52,7 @@ export function DashboardView() {
   } = useMockStore();
 
   const [activePanel, setActivePanel] = useState<StatPanelId | null>(null);
+  const isMobile = useIsMobile();
 
   const todayEvents = getTodayEvents(events);
   const activeMissing = missingItems.filter(isMissingActive);
@@ -80,6 +90,147 @@ export function DashboardView() {
 
   function togglePanel(id: StatPanelId) {
     setActivePanel((current) => (current === id ? null : id));
+  }
+
+  function renderPanelBody(id: StatPanelId) {
+    switch (id) {
+      case "events":
+        return todayEvents.length === 0 ? (
+          <p className="text-sm text-brand-primary/50">
+            Aucun événement aujourd&apos;hui.
+          </p>
+        ) : (
+          todayEvents.map((event) => (
+            <Link
+              key={event.id}
+              href={`/events/${event.id}`}
+              onClick={() => setActivePanel(null)}
+              className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-brand-neutral p-4 transition-colors active:bg-brand-background"
+            >
+              <div>
+                <p className="font-medium text-brand-primary">
+                  {event.name.split(" — ")[0]}
+                </p>
+                <p className="mt-0.5 text-sm text-brand-primary/50">
+                  Départ camion {formatDepartureTime(event.departureTime)}
+                </p>
+              </div>
+              <EventStatusBadge status={event.status} />
+            </Link>
+          ))
+        );
+      case "missing":
+        return activeMissing.length === 0 ? (
+          <p className="text-sm text-brand-primary/50">Aucun manquant actif.</p>
+        ) : (
+          activeMissing.map((item) => (
+            <Link
+              key={item.id}
+              href={`/events/${item.eventId}?tab=missing`}
+              onClick={() => setActivePanel(null)}
+              className="flex min-h-11 items-start gap-3 rounded-lg border border-brand-critical/20 bg-brand-critical/5 p-4 active:bg-brand-critical/10"
+            >
+              <Badge variant="critical">Manquant</Badge>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-brand-primary">
+                  {item.designation}
+                  <span className="ml-2 font-normal text-brand-critical">
+                    ({missingQuantity(item)} manquant
+                    {missingQuantity(item) > 1 ? "s" : ""})
+                  </span>
+                </p>
+                <p className="mt-0.5 text-sm text-brand-primary/50">
+                  {item.eventName.split(" — ")[0]}
+                </p>
+              </div>
+            </Link>
+          ))
+        );
+      case "preparations":
+        return todayEvents.length === 0 ? (
+          <p className="text-sm text-brand-primary/50">
+            Aucune préparation aujourd&apos;hui.
+          </p>
+        ) : (
+          todayEvents.map((event) => {
+            const progress = getEventPrepProgress(event.id);
+            const complete = progress.percent >= 100;
+            return (
+              <Link
+                key={event.id}
+                href={`/events/${event.id}?tab=preparation`}
+                onClick={() => setActivePanel(null)}
+                className={cn(
+                  "block min-h-11 rounded-lg border p-4 active:bg-brand-background",
+                  complete
+                    ? "border-brand-success/30 bg-brand-success/5"
+                    : "border-brand-neutral"
+                )}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-medium text-brand-primary">
+                    {event.name.split(" — ")[0]}
+                  </p>
+                  <span
+                    className={cn(
+                      "text-lg font-bold",
+                      complete ? "text-brand-success" : "text-brand-secondary"
+                    )}
+                  >
+                    {progress.percent}%
+                  </span>
+                </div>
+                {!complete && (
+                  <div className="mt-2">
+                    <PrepProgressBar progress={progress} compact />
+                  </div>
+                )}
+              </Link>
+            );
+          })
+        );
+      case "returns":
+        return returnsByEvent.length === 0 ? (
+          <p className="text-sm text-brand-primary/50">Aucun retour planifié.</p>
+        ) : (
+          returnsByEvent.map((item) => {
+            const timePart =
+              item.returnLabel.split("·").pop()?.trim() ?? item.returnLabel;
+            return (
+              <Link
+                key={item.eventId}
+                href={`/events/${item.eventId}?tab=summary`}
+                onClick={() => setActivePanel(null)}
+                className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-brand-neutral p-4 active:bg-brand-background"
+              >
+                <p className="font-medium text-brand-primary">{item.eventName}</p>
+                <p className="text-sm font-medium text-brand-secondary">
+                  retour {timePart}
+                </p>
+              </Link>
+            );
+          })
+        );
+    }
+  }
+
+  function renderInlinePanel(id: StatPanelId) {
+    const descriptions: Record<StatPanelId, string> = {
+      events: "Accès direct à la fiche de chaque événement",
+      missing: "Tickets en cours — accès direct au détail",
+      preparations: "Avancement par événement — accès à la préparation",
+      returns: "Matériel en circulation — accès à la fiche événement",
+    };
+
+    return (
+      <Card className="border-brand-secondary/20">
+        <CardHeader>
+          <CardTitle>{PANEL_TITLES[id]}</CardTitle>
+          <CardDescription>{descriptions[id]}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">{renderPanelBody(id)}</CardContent>
+      </Card>
+    );
   }
 
   const stats = [
@@ -142,173 +293,17 @@ export function DashboardView() {
         ))}
       </div>
 
-      {activePanel === "events" && (
-        <Card className="border-brand-secondary/20">
-          <CardHeader>
-            <CardTitle>Événements du jour</CardTitle>
-            <CardDescription>
-              Accès direct à la fiche de chaque événement
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {todayEvents.length === 0 ? (
-              <p className="text-sm text-brand-primary/50">
-                Aucun événement aujourd&apos;hui.
-              </p>
-            ) : (
-              todayEvents.map((event) => (
-                <Link
-                  key={event.id}
-                  href={`/events/${event.id}`}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-brand-neutral p-4 transition-colors hover:border-brand-secondary/40 hover:bg-brand-background"
-                >
-                  <div>
-                    <p className="font-medium text-brand-primary">
-                      {event.name.split(" — ")[0]}
-                    </p>
-                    <p className="mt-0.5 text-sm text-brand-primary/50">
-                      Départ camion {formatDepartureTime(event.departureTime)}
-                    </p>
-                  </div>
-                  <EventStatusBadge status={event.status} />
-                </Link>
-              ))
-            )}
-          </CardContent>
-        </Card>
+      {isMobile && activePanel && (
+        <Modal
+          open
+          onClose={() => setActivePanel(null)}
+          title={PANEL_TITLES[activePanel]}
+        >
+          <div className="space-y-2">{renderPanelBody(activePanel)}</div>
+        </Modal>
       )}
 
-      {activePanel === "missing" && (
-        <Card className="border-brand-secondary/20">
-          <CardHeader>
-            <CardTitle>Manquants actifs</CardTitle>
-            <CardDescription>
-              Tickets en cours — accès direct au détail
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {activeMissing.length === 0 ? (
-              <p className="text-sm text-brand-primary/50">
-                Aucun manquant actif.
-              </p>
-            ) : (
-              activeMissing.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/events/${item.eventId}?tab=missing`}
-                  className="flex items-start gap-3 rounded-lg border border-brand-critical/20 bg-brand-critical/5 p-4 transition-colors hover:border-brand-critical/40 hover:bg-brand-critical/10"
-                >
-                  <Badge variant="critical">Manquant</Badge>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-brand-primary">
-                      {item.designation}
-                      <span className="ml-2 font-normal text-brand-critical">
-                        ({missingQuantity(item)} manquant
-                        {missingQuantity(item) > 1 ? "s" : ""})
-                      </span>
-                    </p>
-                    <p className="mt-0.5 text-sm text-brand-primary/50">
-                      {item.eventName.split(" — ")[0]}
-                    </p>
-                  </div>
-                </Link>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {activePanel === "preparations" && (
-        <Card className="border-brand-secondary/20">
-          <CardHeader>
-            <CardTitle>Préparations en cours</CardTitle>
-            <CardDescription>
-              Avancement par événement — accès à la préparation
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {todayEvents.length === 0 ? (
-              <p className="text-sm text-brand-primary/50">
-                Aucune préparation aujourd&apos;hui.
-              </p>
-            ) : (
-              todayEvents.map((event) => {
-                const progress = getEventPrepProgress(event.id);
-                const complete = progress.percent >= 100;
-                return (
-                  <Link
-                    key={event.id}
-                    href={`/events/${event.id}?tab=preparation`}
-                    className={cn(
-                      "block rounded-lg border p-4 transition-colors hover:border-brand-secondary/40 hover:bg-brand-background",
-                      complete
-                        ? "border-brand-success/30 bg-brand-success/5"
-                        : "border-brand-neutral"
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="font-medium text-brand-primary">
-                        {event.name.split(" — ")[0]}
-                      </p>
-                      <span
-                        className={cn(
-                          "text-lg font-bold",
-                          complete
-                            ? "text-brand-success"
-                            : "text-brand-secondary"
-                        )}
-                      >
-                        {progress.percent}%
-                      </span>
-                    </div>
-                    {!complete && (
-                      <div className="mt-2">
-                        <PrepProgressBar progress={progress} compact />
-                      </div>
-                    )}
-                  </Link>
-                );
-              })
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {activePanel === "returns" && (
-        <Card className="border-brand-secondary/20">
-          <CardHeader>
-            <CardTitle>Retours attendus</CardTitle>
-            <CardDescription>
-              Matériel en circulation — accès à la fiche événement
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {returnsByEvent.length === 0 ? (
-              <p className="text-sm text-brand-primary/50">
-                Aucun retour planifié.
-              </p>
-            ) : (
-              returnsByEvent.map((item) => {
-                const timePart = item.returnLabel.split("·").pop()?.trim() ?? item.returnLabel;
-                return (
-                  <Link
-                    key={item.eventId}
-                    href={`/events/${item.eventId}?tab=summary`}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-brand-neutral p-4 transition-colors hover:border-brand-secondary/40 hover:bg-brand-background"
-                  >
-                    <p className="font-medium text-brand-primary">
-                      {item.eventName}
-                    </p>
-                    <p className="text-sm font-medium text-brand-secondary">
-                      retour {timePart}
-                    </p>
-                  </Link>
-                );
-              })
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {!isMobile && activePanel && renderInlinePanel(activePanel)}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

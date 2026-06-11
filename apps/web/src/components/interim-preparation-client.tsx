@@ -25,7 +25,7 @@ function InterimPrepContent({
   const { name } = usePreparer();
 
   return (
-    <div className="mx-auto min-h-[100dvh] max-w-lg bg-brand-background pb-8">
+    <div className="mx-auto min-h-[100dvh] max-w-lg touch-pan-y bg-brand-background pb-8">
       <header className="border-b border-brand-neutral bg-white px-4 py-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-secondary">
           Préparation de commande

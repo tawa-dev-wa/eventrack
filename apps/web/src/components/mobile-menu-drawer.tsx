@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
@@ -17,6 +18,15 @@ export function MobileMenuDrawer({
   const pathname = usePathname();
   const { openMissingCount } = useMockStore();
 
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
   if (!open) return null;
 
   return (
@@ -27,7 +37,7 @@ export function MobileMenuDrawer({
         aria-label="Fermer le menu"
         onClick={onClose}
       />
-      <div className="absolute bottom-0 left-0 right-0 max-h-[85dvh] overflow-y-auto overscroll-y-contain rounded-t-2xl bg-white pb-[env(safe-area-inset-bottom)] shadow-xl">
+      <div className="absolute bottom-0 left-0 right-0 z-10 max-h-[85dvh] overflow-y-auto overscroll-y-contain rounded-t-2xl bg-white pb-[env(safe-area-inset-bottom)] shadow-xl">
         <div className="sticky top-0 flex items-center justify-between border-b border-brand-neutral bg-white px-5 py-4">
           <h2 className="text-lg font-semibold text-brand-primary">
             Tous les modules

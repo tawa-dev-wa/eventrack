@@ -3,7 +3,7 @@
 import { ORDER_SECTION_LABELS, type OrderSection } from "@eventrack/shared";
 import { Button, Input, Textarea } from "@eventrack/ui";
 import { Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AccordionItem } from "@/components/accordion";
 import { AvailabilityBadge } from "@/components/status-badges";
 import { ProductDetailSheet } from "@/components/product-detail-sheet";
@@ -64,8 +64,27 @@ export function OrderFormView({ eventId }: { eventId: string }) {
   const [addSection, setAddSection] = useState<OrderSection>("decoration_buffet");
   const [remarks, setRemarks] = useState(event?.comments ?? "");
   const [detailProductId, setDetailProductId] = useState<string | null>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const results = query.length >= 2 ? searchProducts(query).slice(0, 6) : [];
+
+  useEffect(() => {
+    if (!showResults) return;
+    function handlePointerDown(event: MouseEvent | TouchEvent) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setShowResults(false);
+      }
+    }
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+    };
+  }, [showResults]);
 
   function handleAddProduct() {
     if (!selectedProduct) return;
@@ -169,8 +188,8 @@ export function OrderFormView({ eventId }: { eventId: string }) {
       </div>
 
       <div className="flex flex-wrap items-end gap-3 rounded-lg border border-brand-neutral bg-white p-4">
-        <div className="relative min-w-[240px] flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-primary/40" />
+        <div ref={searchRef} className="relative min-w-[240px] flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-primary/40" />
           <Input
             value={query}
             onChange={(e) => {
@@ -178,6 +197,9 @@ export function OrderFormView({ eventId }: { eventId: string }) {
               setShowResults(true);
             }}
             onFocus={() => setShowResults(true)}
+            onBlur={() => {
+              window.setTimeout(() => setShowResults(false), 150);
+            }}
             placeholder="Rechercher un produit… ex: vase"
             className="pl-9"
           />
